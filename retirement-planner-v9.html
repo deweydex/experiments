@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Family Retirement Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<script id="istate" type="application/json">null</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  /* ── Brand colours ── */
+  --navy:#1b2f4a;--navy-mid:#243d60;--gold:#b8892b;--gold-light:#d4a445;
+  --bg:#f4f0e8;--surface:#fff;--surface-raised:#faf7f2;--surface-sunken:#f2ede4;
+  --border:#e0d8cc;--border-strong:#ccc3b4;
+  --color-property:#7a4f2e;
+  /* ── Semantic text colours ── */
+  --text-primary:#1a1917;--text-muted:#786f62;--text-hint:#a8a098;
+  /* ── Status colours ── */
+  --status-green:#2d6a4f;--status-red:#b83232;--status-amber:#b5620a;
+  /* ── Aliases used in older selectors (kept for compatibility) ── */
+  --surf:var(--surface);--surf2:var(--surface-raised);--surf3:var(--surface-sunken);
+  --brd:var(--border);--brd2:var(--border-strong);
+  --tx:var(--text-primary);--mu:var(--text-muted);--hi:var(--text-hint);
+  --grn:var(--status-green);--red:var(--status-red);--amb:var(--status-amber);
+  --prop:var(--color-property);
+  /* ── Typography ── */
+  --font-serif:'Lora',Georgia,serif;
+  --font-sans:'DM Sans',system-ui,sans-serif;
+  --font-mono:'DM Mono','Courier New',monospace;
+  --fd:var(--font-serif);--fu:var(--font-sans);--fn:var(--font-mono);
+  /* ── Font-size scale ── */
+  --fs-xxs:9px;--fs-xs:10px;--fs-sm:11px;--fs-base:13px;--fs-md:14px;
+  /* ── Border radius ── */
+  --radius:6px;--radius-lg:10px;
+  --r:var(--radius);--r2:var(--radius-lg);
+  /* ── Layout ── */
+  --header-h:52px;
+  --hh:var(--header-h);
+  /* ── Motion ── */
+  --dur:0.12s;
+  /* ── Z-index layers ── */
+  --z-header:30;--z-infopanel:25;--z-popover:500;--z-tooltip:9999;
+}
+html{font-size:14px}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text-primary);line-height:1.5;overflow:hidden;height:100vh;display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+header{background:var(--navy);height:var(--header-h);padding:0 1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;z-index:var(--z-header)}
+.app-title{font-family:var(--font-serif);font-size:1rem;font-weight:400;color:#fff;white-space:nowrap;line-height:1.2}
+.app-title small{display:block;font-family:var(--font-sans);font-size:var(--fs-xxs);opacity:0.4;text-transform:uppercase;letter-spacing:0.09em}
+.hdr-mid{display:flex;align-items:center;gap:6px;flex:1;justify-content:center}
+.hdr-r{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.hdr-sep{width:1px;height:18px;background:rgba(255,255,255,0.18);flex-shrink:0}
+
+/* ── SETTINGS DROPDOWN (wide popover off the header button) ── */
+.settings-pop{min-width:360px;padding:0;overflow:visible}
+.settings-pop .pop-title{padding:0.6rem 0.875rem 0.45rem;border-bottom:1px solid var(--border);margin:0}
+.settings-group{padding:0.6rem 0.875rem}
+.settings-group+.settings-group{border-top:1px solid var(--surface-sunken)}
+.sg-title{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);font-weight:500;margin-bottom:7px}
+.settings-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:12.5px;color:var(--text-primary)}
+.settings-row:last-child{margin-bottom:0}
+.settings-row label{flex:1;color:var(--text-muted);font-size:12px;cursor:default}
+.settings-row label[data-tip]{cursor:help}
+.settings-row input[type=number]{width:58px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-family:var(--font-mono);font-size:12px;text-align:center;background:var(--surface);color:var(--text-primary)}
+.settings-row input[type=number]:focus{outline:none;border-color:var(--navy)}
+.settings-row input[type=checkbox]{accent-color:var(--navy);cursor:pointer}
+.settings-row .unit{font-size:11px;color:var(--text-hint);flex-shrink:0}
+
+/* ── INFO PANEL (collapsible, below header) ── */
+.info-panel{background:var(--navy-mid);color:rgba(255,255,255,0.82);font-size:11.5px;line-height:1.6;overflow:hidden;max-height:0;transition:max-height 0.3s ease;flex-shrink:0;z-index:var(--z-infopanel)}
+.info-panel.open{max-height:600px}
+.info-inner{padding:0.875rem 1.25rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.info-sec{font-size:11px}
+.info-sec h4{font-family:var(--font-serif);font-size:12px;font-weight:500;color:#fff;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid rgba(255,255,255,0.15)}
+.info-sec p{color:rgba(255,255,255,0.65);line-height:1.55;margin-bottom:4px}
+.info-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-top:4px}
+.info-tbl th{text-align:left;padding:2px 6px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.75);font-size:10px;text-transform:uppercase;letter-spacing:0.05em;font-weight:500}
+.info-tbl td{padding:2px 6px;border-bottom:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.65);font-family:var(--font-mono);font-size:11px}
+.info-tbl tr:last-child td{border-bottom:none}
+.info-tbl td:first-child{font-family:var(--font-sans)}
+.info-disc{grid-column:1/-1;font-size:10px;color:rgba(255,255,255,0.35);line-height:1.5;padding-top:6px;border-top:1px solid rgba(255,255,255,0.1);font-style:italic}
+
+/* ── CONFIRM DIALOG (Start Fresh) ── */
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(10,20,35,0.55);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.confirm-overlay.open{display:flex}
+.confirm-box{background:var(--surface);border-radius:var(--radius-lg);padding:1.5rem;width:360px;max-width:92vw;border:1px solid var(--border-strong)}
+.confirm-box h3{font-family:var(--font-serif);font-size:1rem;font-weight:500;color:var(--navy);margin-bottom:0.6rem}
+.confirm-box p{font-size:13px;color:var(--text-muted);line-height:1.55;margin-bottom:1rem}
+.confirm-btns{display:flex;gap:8px;justify-content:flex-end}
+
+/* ── DRAGGABLE COLUMN ITEMS ── */
+.col-drag-item{display:flex;align-items:center;gap:6px;padding:4px 2px;border-radius:4px;cursor:default;user-select:none;transition:background var(--dur)}
+.col-drag-item.dragging{opacity:0.4}
+.col-drag-item.drag-over{background:var(--surface-sunken);outline:2px dashed var(--gold)}
+.drag-handle{color:var(--text-hint);font-size:13px;cursor:grab;padding:0 2px;flex-shrink:0;line-height:1}
+.drag-handle:active{cursor:grabbing}
+.col-drag-item input[type=checkbox]{accent-color:var(--navy);cursor:pointer;flex-shrink:0}
+.col-drag-item span{font-size:12.5px;color:var(--text-primary);flex:1}
+
+/* ── BUTTONS ── */
+.btn{font-family:var(--font-sans);font-size:12px;font-weight:500;padding:0.28rem 0.75rem;border-radius:var(--radius);border:1px solid;cursor:pointer;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;transition:opacity var(--dur),background var(--dur)}
+/* Header ghost — white-on-navy, used for Settings and Export */
+.btn-ghost{background:transparent;border-color:rgba(255,255,255,0.22);color:rgba(255,255,255,0.82)}
+.btn-ghost:hover{background:rgba(255,255,255,0.07)}
+/* Header teal — slightly brighter, used for Info & Assumptions panel toggle */
+.btn-teal{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);color:#fff}
+.btn-teal:hover{background:rgba(255,255,255,0.18)}
+.btn-teal.active{background:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.5)}
+/* Header danger-ghost — used for Fresh Start */
+.btn-danger-ghost{background:transparent;border-color:rgba(255,120,100,0.35);color:rgba(255,160,140,0.85)}
+.btn-danger-ghost:hover{background:rgba(255,80,60,0.12)}
+/* Gold — used for Export & Save */
+.btn-gold{background:var(--gold);border-color:var(--gold);color:#fff}
+.btn-gold:hover{opacity:0.87}
+/* Light surface button — used in left/right panes */
+.btn-outline{background:var(--surface);border-color:var(--border-strong);color:var(--text-primary);font-size:12px}
+.btn-outline:hover{background:var(--surface-raised)}
+/* Dashed add button — full-width, used below lists */
+.btn-add{background:transparent;border:1.5px dashed var(--border-strong);color:var(--text-muted);width:100%;justify-content:center;padding:0.35rem;border-radius:var(--radius);cursor:pointer;font-size:12px;font-family:var(--font-sans);display:flex;align-items:center;gap:4px;margin-top:4px;transition:all var(--dur)}
+.btn-add:hover{border-color:var(--gold);color:var(--gold)}
+/* Small inline delete button */
+.btn-del{background:transparent;border:1px solid #f2d0d0;color:var(--status-red);font-size:11px;padding:1px 5px;border-radius:4px;cursor:pointer;font-family:var(--font-sans)}
+.btn-del:hover{background:#fef2f2}
+/* Tiny xs button — reorder arrows, scenario new etc. */
+.btn-xs{font-family:var(--font-sans);font-size:11px;padding:2px 7px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text-muted);cursor:pointer;transition:background var(--dur)}
+.btn-xs:hover{background:var(--surface-raised)}
+/* Scenario "+ New" gets the dashed gold treatment */
+.btn-scen-new{font-family:var(--font-sans);font-size:11.5px;font-weight:500;padding:3px 10px;border:1.5px dashed var(--gold);border-radius:18px;background:transparent;color:var(--gold);cursor:pointer;transition:all var(--dur)}
+.btn-scen-new:hover{background:rgba(184,137,43,0.08)}
+
+/* ── EXPORT MENU ITEM (inside the Export & Save popover) ── */
+.export-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;padding:8px 6px;font-family:var(--font-sans);font-size:13px;cursor:pointer;border-radius:var(--radius);color:var(--text-primary);transition:background var(--dur)}
+.export-item:hover{background:var(--surface-raised)}
+.export-item-icon{font-size:16px;flex-shrink:0;width:22px;text-align:center;color:var(--text-muted)}
+.export-item-label{font-weight:500;font-size:13px;display:block;line-height:1.2}
+.export-item-desc{font-size:11px;color:var(--text-muted);display:block;margin-top:1px;line-height:1.3}
+.export-divider{height:1px;background:var(--border);margin:4px 0}
+
+/* ── LAYOUT ── */
+.split{display:flex;flex:1;overflow:hidden;min-height:0}
+.lpane{overflow-y:auto;background:var(--surf2);min-width:260px;flex-shrink:0;display:flex;flex-direction:column}
+.resizer{width:5px;background:var(--brd);cursor:col-resize;flex-shrink:0;position:relative;z-index:10;transition:background 0.12s}
+.resizer:hover,.resizer.active{background:var(--gold)}
+.resizer::after{content:'⋮';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--hi);font-size:12px;pointer-events:none}
+.rpane{flex:1;overflow-y:auto;background:var(--surf);padding:1rem 1.125rem;min-width:300px}
+
+/* ── LEFT PANE TABS ── */
+.ltab-bar{display:flex;background:var(--surf3);border-bottom:2px solid var(--brd);flex-shrink:0}
+.ltab{flex:1;padding:0.55rem 0.5rem;background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;font-family:var(--fu);font-size:12px;font-weight:500;color:var(--mu);cursor:pointer;transition:all 0.12s;white-space:nowrap}
+.ltab:hover{color:var(--tx)}
+.ltab.act{color:var(--navy);border-bottom-color:var(--navy);background:var(--surf2)}
+.ltab-panel{display:none;flex:1;overflow-y:auto}
+.ltab-panel.open{display:block}
+
+/* ── ACCORDION ── */
+.accord{border-bottom:1px solid var(--brd)}
+.ac-btn{width:100%;background:none;border:none;padding:0.7rem 1rem;text-align:left;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:var(--fd);font-size:0.875rem;font-weight:500;color:var(--navy);transition:background 0.12s}
+.ac-btn:hover{background:rgba(0,0,0,0.015)}
+.ac-arr{font-size:9px;color:var(--hi);transition:transform 0.2s;display:inline-block}
+.ac-btn.open .ac-arr{transform:rotate(180deg)}
+.ac-body{padding:0.6rem 1rem 0.875rem;display:none}
+.ac-body.open{display:block}
+
+/* ── FORM ── */
+.f{margin-bottom:7px}
+.f>label{font-size:11px;color:var(--mu);display:block;margin-bottom:2px}
+.f input[type=number],.f input[type=text],.f select{width:100%;padding:4px 7px;border:1px solid var(--brd);border-radius:5px;font-family:var(--fu);font-size:12.5px;background:var(--surf);color:var(--tx);transition:border-color 0.12s}
+.f input:focus,.f select:focus{outline:none;border-color:var(--navy)}
+.mono{font-family:var(--fn)!important}
+.note{font-size:10.5px;color:var(--hi);font-style:italic;margin-top:2px;line-height:1.35}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.seclbl{font-size:10.5px;text-transform:uppercase;letter-spacing:0.07em;color:var(--mu);font-weight:500;margin:0.75rem 0 0.4rem;display:flex;align-items:center;gap:5px}
+.seclbl::after{content:'';flex:1;height:1px;background:var(--brd)}
+
+/* ── TOOLTIP ── */
+.tt{position:fixed;z-index:var(--z-tooltip);pointer-events:none;display:none;max-width:270px;background:var(--navy);color:rgba(255,255,255,0.92);padding:7px 10px;border-radius:7px;font-size:11.5px;line-height:1.5;font-family:var(--font-sans);box-shadow:0 4px 18px rgba(0,0,0,0.28)}
+[data-tip]{text-decoration:underline dotted var(--hi);cursor:help}
+[data-tip]:hover{text-decoration-color:var(--gold)}
+
+/* ── PERSON BLOCK ── */
+.phead{display:flex;align-items:center;gap:7px;padding:0.6rem 0.875rem;background:var(--surf);border:1px solid var(--brd);border-radius:var(--r2) var(--r2) 0 0;border-bottom:none}
+.pavi{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:11px;flex-shrink:0}
+.pname{font-family:var(--fd);font-size:0.85rem;font-weight:500;color:var(--navy);border:none;background:transparent;padding:0;flex:1}
+.pname:focus{outline:none}
+.pblock{background:var(--surf);border:1px solid var(--brd);border-radius:0 0 var(--r2) var(--r2);padding:0.6rem 0.875rem;margin-bottom:6px}
+
+/* ── INCOME STREAM CARD ── */
+.inc-card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r2);padding:0.6rem 0.875rem;margin-bottom:5px;border-left:3px solid var(--brd2)}
+.inc-card.type-ss{border-left-color:#1b2f4a}.inc-card.type-pension{border-left-color:#b8892b}
+.inc-card.type-annuity{border-left-color:#2d6a4f}.inc-card.type-rental{border-left-color:#b5620a}
+.inc-card.type-wages{border-left-color:#7366c8}.inc-card.type-other{border-left-color:#a8a098}
+.inc-head{display:flex;align-items:center;gap:5px;margin-bottom:0.5rem}
+.inc-type-badge{font-size:10px;padding:1px 6px;border-radius:9px;border:1px solid;font-weight:500;white-space:nowrap}
+.itb-ss{background:#e6eef7;color:#1b2f4a;border-color:#a8c0d8}
+.itb-pension{background:#fff8ec;color:#8a5e00;border-color:#f5d87a}
+.itb-annuity{background:#eaf3de;color:#3b6d11;border-color:#c0dd97}
+.itb-rental{background:#fff4ec;color:#b5620a;border-color:#f5c497}
+.itb-wages{background:#f0eeff;color:#5a50b0;border-color:#c0b8f0}
+.itb-other{background:var(--surf3);color:var(--mu);border-color:var(--brd2)}
+
+/* ── MONEY ROW ── */
+.mrow{display:grid;grid-template-columns:1fr 60px;gap:5px;align-items:end;margin-bottom:6px}
+.mrow .f{margin:0}
+.ftog{display:flex;border:1px solid var(--brd);border-radius:5px;overflow:hidden;height:26px;align-self:end}
+.ftb{flex:1;background:var(--surf);border:none;font-size:11px;cursor:pointer;font-family:var(--fu);color:var(--mu);padding:0 5px;transition:all 0.12s}
+.ftb.act{background:var(--navy);color:#fff}
+.ftb:hover:not(.act){background:var(--surf3)}
+
+/* ── ACCOUNT CARD ── */
+.acct-card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r2);padding:0.6rem 0.875rem;margin-bottom:5px}
+.acct-card.prop-acct{border-left:3px solid var(--prop)}
+.acct-head{display:flex;align-items:center;gap:5px;margin-bottom:0.45rem;padding-bottom:0.4rem;border-bottom:1px solid var(--brd)}
+.acct-ord{width:20px;height:20px;border-radius:50%;background:var(--surf3);border:1px solid var(--brd2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--mu);flex-shrink:0}
+.acct-ni{font-weight:500;font-size:12.5px;color:var(--navy);border:none;background:transparent;padding:0;flex:1}
+.acct-ni:focus{outline:none}
+.tbadge{font-size:10px;padding:1px 6px;border-radius:9px;font-weight:500;border:1px solid;white-space:nowrap}
+.trad{background:#fff8ec;color:#8a5e00;border-color:#f5d87a}
+.roth{background:#eaf3de;color:#3b6d11;border-color:#c0dd97}
+.taxb{background:#e6f1fb;color:#0c447c;border-color:#85b7eb}
+.prop{background:#f5ede4;color:#7a4f2e;border-color:#d4a97a}
+.rmd-chip{font-size:11px;color:var(--amb);margin-top:3px;padding:3px 7px;background:#fff8ec;border-radius:4px;display:inline-block}
+
+/* ── SCENARIO PILLS ── */
+.spills{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:0.7rem;align-items:center}
+.spill{padding:3px 10px;border-radius:18px;font-size:12px;border:1px solid var(--brd2);background:var(--surf);cursor:pointer;color:var(--mu);font-family:var(--fu);font-weight:500;display:flex;align-items:center;gap:4px;transition:all 0.12s}
+.spill.act{background:var(--navy);color:#fff;border-color:var(--navy)}
+.sdel,.sdup{font-size:9.5px;opacity:0.55;cursor:pointer;padding:1px 2px;transition:opacity 0.1s}
+.sdel:hover,.sdup:hover{opacity:1}
+
+/* ── EXPENSE TABLE ── */
+.exp-wrap{overflow-x:auto;margin-bottom:4px}
+.etbl{width:100%;border-collapse:collapse;font-size:12px;min-width:560px}
+.etbl th{font-size:9.5px;text-transform:uppercase;letter-spacing:0.05em;color:var(--mu);padding:3px 4px;text-align:left;border-bottom:1px solid var(--brd);font-weight:500;white-space:nowrap}
+.etbl td{padding:3px 3px;border-bottom:1px solid var(--surf3);vertical-align:middle}
+.etbl tr:last-child td{border-bottom:none}
+.etbl input,.etbl select{padding:3px 5px;border:1px solid var(--brd);border-radius:4px;font-size:12px;background:var(--surf);width:100%;font-family:var(--fu)}
+
+/* ── CASH EVENT CARD ── */
+.ce-card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r2);padding:0.6rem 0.875rem;margin-bottom:5px}
+.ce-head{display:flex;align-items:center;gap:6px;margin-bottom:0.45rem;padding-bottom:0.4rem;border-bottom:1px solid var(--brd)}
+.ce-type{font-size:10px;padding:1px 7px;border-radius:9px;border:1px solid;font-weight:500}
+.ce-in{background:#eaf3de;color:#3b6d11;border-color:#c0dd97}
+.ce-out{background:#fef2f2;color:var(--red);border-color:#f8d4d4}
+.ce-rows{display:grid;grid-template-columns:1fr 52px 105px 1fr 24px;gap:5px;align-items:end}
+.ce-rows .f{margin:0}
+.tnote{font-size:10.5px;padding:3px 7px;border-radius:4px;margin-top:3px;line-height:1.5}
+.tnote-y{background:#fff8ec;color:#8a5e00}
+.tnote-n{background:#eaf3de;color:#3b6d11}
+
+/* ── POPOVER — z-index must exceed the metrics cards ── */
+.popwrap{position:relative;display:inline-block}
+.popover{display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius-lg);padding:0.625rem 0.75rem;z-index:var(--z-popover);min-width:215px;box-shadow:0 6px 24px rgba(0,0,0,0.13);max-height:70vh;overflow-y:auto}
+.popover.open{display:block}
+.pop-title{font-size:10px;font-weight:500;color:var(--text-hint);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+/* Standard checkbox/label row used in Metrics popover */
+.pop-item{display:flex;align-items:center;gap:8px;padding:5px 2px;font-size:13px;cursor:pointer;border-radius:4px;transition:background var(--dur)}
+.pop-item:hover{background:var(--surface-raised)}
+.pop-item input[type=checkbox]{cursor:pointer;accent-color:var(--navy);flex-shrink:0}
+
+/* ── RESULTS ── */
+.met-grid{display:grid;gap:7px;margin-bottom:0.875rem}
+.met{background:var(--surf2);border:1px solid var(--brd);border-radius:var(--r2);padding:0.65rem 0.875rem;text-align:center}
+.met-l{font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:var(--mu);margin-bottom:4px}
+.met-v{font-family:var(--fn);font-size:1.1rem;color:var(--navy)}
+.met-v.g{color:var(--grn)}.met-v.r{color:var(--red)}.met-v.a{color:var(--amb)}
+.met-s{font-size:10px;color:var(--hi);margin-top:2px}
+.chart-wrap{background:var(--surf2);border:1px solid var(--brd);border-radius:var(--r2);padding:0.875rem;position:relative;height:240px;margin-bottom:0.75rem}
+.cleg{display:flex;gap:12px;margin-bottom:5px;font-size:11px;color:var(--mu);flex-wrap:wrap}
+.ld{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:3px;vertical-align:middle}
+.resbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.45rem;gap:6px}
+.res-hd{font-family:var(--fd);font-size:0.875rem;font-weight:500;color:var(--navy)}
+.rt-wrap{overflow-x:auto}
+/* Column headers wrap rather than truncate */
+.rt{width:100%;border-collapse:collapse;font-size:11px}
+.rt th{font-size:9px;text-transform:uppercase;letter-spacing:0.04em;color:var(--mu);padding:3px 5px;text-align:right;border-bottom:1px solid var(--brd);background:var(--surf);font-weight:500;white-space:normal;min-width:68px;line-height:1.3}
+.rt th:first-child{text-align:left;min-width:80px}
+.rt td{padding:2.5px 5px;text-align:right;border-bottom:1px solid #f2ede4;font-family:var(--fn);font-size:10.5px}
+.rt td:first-child{text-align:left;font-family:var(--fu);font-size:11px}
+.rt tr.dep td{color:var(--red);background:#fef2f2}
+.rt tr.evt{background:#fefbf3}.rt tr.evtm{background:#f0f7ff}
+.neg{color:var(--red)}.pos{color:var(--grn)}.bk{font-weight:500}
+.badge{display:inline-block;padding:0 5px;border-radius:5px;font-size:9px;font-weight:500;vertical-align:middle;margin-left:2px;font-family:var(--fu)}
+.bw{background:#fff8e6;color:#8a5e00;border:1px solid #f5d87a}
+.disc{font-size:10px;color:var(--hi);margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--brd);line-height:1.65}
+
+/* ── PRINT ── */
+@media print{
+  @page{size:A4 portrait;margin:16mm 14mm}
+  @page landscape{size:A4 landscape;margin:12mm 10mm}
+  body,html{overflow:visible;height:auto;display:block;background:#fff}
+  header,.info-panel,.split,#app,.confirm-overlay{display:none!important}
+  #prpt{display:block!important}
+  a{color:inherit;text-decoration:none}
+}
+#prpt{display:none;font-family:'DM Sans',system-ui,sans-serif;font-size:12px;color:#1a1917;line-height:1.5}
+.rpt-cover{border-bottom:3px solid #1b2f4a;padding-bottom:12px;margin-bottom:20px}
+.rpt-cover h1{font-family:'Lora',Georgia,serif;font-size:22px;font-weight:400;color:#1b2f4a;margin-bottom:4px}
+.rpt-cover .rpt-meta{font-size:11px;color:#786f62;display:flex;gap:16px;flex-wrap:wrap}
+.rpt-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.rpt-kpi{border:1px solid #e0d8cc;border-radius:6px;padding:8px 10px;text-align:center}
+.rpt-kpi-l{font-size:9px;text-transform:uppercase;letter-spacing:0.06em;color:#786f62;margin-bottom:3px}
+.rpt-kpi-v{font-size:15px;font-family:'DM Mono','Courier New',monospace;color:#1b2f4a}
+.rpt-kpi-v.g{color:#2d6a4f}.rpt-kpi-v.r{color:#b83232}.rpt-kpi-v.a{color:#b5620a}
+.rpt-sec{margin:16px 0;page-break-inside:avoid}
+.rpt-sec h2{font-family:'Lora',Georgia,serif;font-size:13px;font-weight:500;color:#1b2f4a;border-bottom:1px solid #e0d8cc;padding-bottom:4px;margin-bottom:8px}
+.rpt-assm{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px}
+.rpt-assm-row{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px dotted #e0d8cc;padding:2px 0;font-size:11px}
+.rpt-assm-row .al{color:#786f62}.rpt-assm-row .av{font-family:'DM Mono','Courier New',monospace;color:#1a1917}
+.rpt-people{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+.rpt-person{border:1px solid #e0d8cc;border-radius:6px;padding:8px 10px}
+.rpt-person h3{font-size:11px;font-weight:500;color:#1b2f4a;margin-bottom:4px}
+.rt2{width:100%;border-collapse:collapse;font-size:10.5px}
+.rt2 th{text-align:left;padding:3px 6px;background:#f0ede6;border:1px solid #ddd;font-size:9px;text-transform:uppercase;letter-spacing:0.05em;font-weight:500}
+.rt2 td{padding:2.5px 6px;border:1px solid #e8e2d8;font-family:'DM Mono','Courier New',monospace;font-size:10px;text-align:right}
+.rt2 td.tl,.rt2 th.tl{text-align:left;font-family:'DM Sans',system-ui,sans-serif}
+.rt2 tr.dep td{background:#fef2f2;color:#b83232}
+.rt2 tr.evt td{background:#fefbf3}
+.rt2 tr.tot td{background:#f0ede6;font-weight:600}
+.pb-before{page-break-before:always}
+.landscape-section{page:landscape}
+.rpt-disc{font-size:9px;color:#a8a098;margin-top:16px;padding-top:10px;border-top:1px solid #e0d8cc;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="tt" id="tt"></div>
+<div id="prpt"><div id="rpt-body"></div></div>
+
+<div id="app" style="display:flex;flex-direction:column;flex:1;min-height:0">
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="app-title">Family Retirement Planner<small>Private financial forecast · v9</small></div>
+  <div class="hdr-mid"></div>
+
+  <div class="hdr-r">
+    <!-- ↺ Fresh Start — danger styling signals destructive action -->
+    <button class="btn btn-danger-ghost" onclick="startFresh()" data-tip="Reset to a blank slate. All data will be cleared. Save first using Export & Save if needed.">↺ Fresh Start</button>
+    <div class="hdr-sep"></div>
+    <!-- ⚙ Settings — same gold as Export & Save -->
+    <div class="popwrap">
+      <button class="btn btn-gold" onclick="togglePop('settings-pop')">⚙ Settings ▾</button>
+      <div class="popover settings-pop" id="settings-pop">
+        <div class="pop-title">Simulation settings</div>
+
+        <div class="settings-group">
+          <div class="sg-title">Returns</div>
+          <div class="settings-row">
+            <label data-tip="Expected annual return on investment and savings accounts. Diversified stocks-and-bonds portfolios typically target 5–7%. S&P 500 historical average is ~10% before inflation.">Base return</label>
+            <input type="number" id="h-ret" value="6.5" step="0.1" min="-5" max="20" oninput="S.retRate=+this.value;recalc()">
+            <span class="unit">%/yr</span>
+          </div>
+          <div class="settings-row">
+            <label data-tip="Pessimistic return for poor markets or very conservative portfolios. Toggle ON to replace the base return throughout the simulation.">Stress-test return</label>
+            <input type="number" id="h-str" value="3.0" step="0.1" min="-10" max="10" oninput="S.stressRate=+this.value;recalc()">
+            <span class="unit">%/yr</span>
+          </div>
+          <div class="settings-row">
+            <label>Use stress-test return</label>
+            <button id="stress-btn" class="stress-pill sp-off" onclick="toggleStress()">off</button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="sg-title">Inflation</div>
+          <div class="settings-row">
+            <label data-tip="How fast everyday prices rise each year. US Federal Reserve targets 2%. Historical average ~3%. Applied to most expense rows.">General inflation</label>
+            <input type="number" id="h-inf" value="2.5" step="0.1" min="0" max="10" oninput="S.genInfl=+this.value;recalc()">
+            <span class="unit">%/yr</span>
+          </div>
+          <div class="settings-row">
+            <label data-tip="US healthcare costs rise ~5–6%/yr due to labour costs, drug prices, and technology. Applied to expense rows marked 'Medical'.">Medical inflation</label>
+            <input type="number" id="h-med" value="5.5" step="0.1" min="0" max="15" oninput="S.medInfl=+this.value;recalc()">
+            <span class="unit">%/yr</span>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="sg-title">Tax</div>
+          <div class="settings-row">
+            <label data-tip="Applied as a flat percentage on Adjusted Gross Income. 0% in Florida, Texas, Nevada, Washington. Up to 13.3% in California.">State income tax</label>
+            <input type="number" id="h-st" value="0" step="0.1" min="0" max="15" oninput="S.stateTax=+this.value;recalc()">
+            <span class="unit">%</span>
+          </div>
+          <div class="settings-row" style="color:var(--text-hint);font-size:11px;justify-content:flex-start">
+            Federal tax calculated automatically · 2024/25 brackets
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="sg-title">Simulation</div>
+          <div class="settings-row">
+            <label data-tip="The simulation runs until the first person reaches this age, or until all people have passed — whichever comes first.">End at age (first person)</label>
+            <input type="number" id="h-ea" value="95" min="80" max="115" oninput="S.endAge=+this.value;recalc()">
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="sg-title">Currency</div>
+          <div class="settings-row">
+            <label>Show EUR equivalent</label>
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;color:var(--text-primary)">
+              <input type="checkbox" id="h-eur" onchange="S.showEur=this.checked;recalc()"> EUR
+            </label>
+          </div>
+          <div class="settings-row">
+            <label data-tip="Exchange rate is not fetched automatically — update manually when needed.">Exchange rate $1 =</label>
+            <input type="number" id="h-er" value="0.92" step="0.01" min="0.1" max="3" oninput="S.eurRate=+this.value;recalc()">
+            <span class="unit">€</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ℹ Info & Assumptions Panel toggle — teal signals "expand a panel" -->
+    <button class="btn btn-teal" onclick="toggleInfo()" id="info-btn">ℹ Info &amp; Assumptions Panel</button>
+    <div class="hdr-sep"></div>
+    <!-- ↓ Export & Save -->
+    <div class="popwrap">
+      <button class="btn btn-gold" onclick="togglePop('export-pop')">↓ Export &amp; Save ▾</button>
+      <div class="popover" id="export-pop" style="min-width:240px;padding:0.5rem">
+        <div class="pop-title">Export &amp; save options</div>
+        <button class="export-item" onclick="dlApp();togglePop('export-pop')">
+          <span class="export-item-icon">↓</span>
+          <span><span class="export-item-label">Save App</span><span class="export-item-desc">Download as a self-contained .html file with all current data baked in</span></span>
+        </button>
+        <div class="export-divider"></div>
+        <button class="export-item" onclick="printRpt();togglePop('export-pop')">
+          <span class="export-item-icon">⎙</span>
+          <span><span class="export-item-label">Print / PDF</span><span class="export-item-desc">Full report with all inputs, assumptions &amp; year-by-year projection</span></span>
+        </button>
+        <button class="export-item" onclick="exportXLSX();togglePop('export-pop')">
+          <span class="export-item-icon">⊞</span>
+          <span><span class="export-item-label">Excel (.xlsx)</span><span class="export-item-desc">Multi-sheet workbook with real numbers for charting and filtering</span></span>
+        </button>
+        <button class="export-item" onclick="exportCSV();togglePop('export-pop')">
+          <span class="export-item-icon">⊟</span>
+          <span><span class="export-item-label">CSV</span><span class="export-item-desc">Year-by-year projection as a plain spreadsheet file</span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── INFO & ASSUMPTIONS PANEL ── -->
+<div class="info-panel" id="info-panel">
+  <div class="info-inner">
+    <div class="info-sec">
+      <h4>2024/25 Federal Income Tax Brackets</h4>
+      <p>Married Filing Jointly (MFJ) — used when 2+ people alive</p>
+      <table class="info-tbl">
+        <tr><th>Taxable income</th><th>Rate</th></tr>
+        <tr><td>$0 – $23,200</td><td>10%</td></tr>
+        <tr><td>$23,201 – $94,300</td><td>12%</td></tr>
+        <tr><td>$94,301 – $201,050</td><td>22%</td></tr>
+        <tr><td>$201,051 – $383,900</td><td>24%</td></tr>
+        <tr><td>$383,901 – $487,450</td><td>32%</td></tr>
+        <tr><td>$487,451 – $731,200</td><td>35%</td></tr>
+        <tr><td>Over $731,200</td><td>37%</td></tr>
+      </table>
+      <p style="margin-top:5px">Single filer — used after one person passes</p>
+      <table class="info-tbl">
+        <tr><th>Taxable income</th><th>Rate</th></tr>
+        <tr><td>$0 – $11,600</td><td>10%</td></tr>
+        <tr><td>$11,601 – $47,150</td><td>12%</td></tr>
+        <tr><td>$47,151 – $100,525</td><td>22%</td></tr>
+        <tr><td>$100,526 – $191,950</td><td>24%</td></tr>
+        <tr><td>Over $191,950</td><td>32–37%</td></tr>
+      </table>
+    </div>
+
+    <div class="info-sec">
+      <h4>Social Security Taxation (IRS Pub. 915)</h4>
+      <p>Up to 85% of Social Security income is taxable depending on total "provisional income" = (non-SS income) + SS × 50%.</p>
+      <table class="info-tbl">
+        <tr><th>Provisional income</th><th>SS taxable</th></tr>
+        <tr><td>Under $32k (MFJ) / $25k (Single)</td><td>0%</td></tr>
+        <tr><td>$32k–$44k (MFJ) / $25k–$34k (Single)</td><td>Up to 50%</td></tr>
+        <tr><td>Over $44k (MFJ) / $34k (Single)</td><td>Up to 85%</td></tr>
+      </table>
+      <h4 style="margin-top:10px">Standard Deductions 2024</h4>
+      <table class="info-tbl">
+        <tr><td>Married Filing Jointly</td><td>$30,000</td></tr>
+        <tr><td>Single filer</td><td>$15,000</td></tr>
+      </table>
+      <p style="margin-top:5px">Additional $1,550 deduction per person age 65+. This planner uses the base figures as a conservative estimate.</p>
+    </div>
+
+    <div class="info-sec">
+      <h4>Gift Tax Rules (2024)</h4>
+      <p><strong>Annual exclusion:</strong> $18,000 per recipient per year. Gifts up to this amount require no reporting.</p>
+      <p><strong>Lifetime exemption:</strong> $13,610,000 per person. Gift tax is rarely owed below this cumulative threshold.</p>
+      <p><strong>Direct tuition payments</strong> to educational institutions are excluded from gift tax entirely (any amount).</p>
+      <p><strong>Medical payments</strong> directly to providers are also excluded.</p>
+      <h4 style="margin-top:10px">Required Minimum Distributions</h4>
+      <p>Begin at age 73 (SECURE 2.0 Act, 2023). Calculated from the IRS Uniform Lifetime Table. Formula: account balance ÷ life expectancy factor. Applies to Traditional IRA, 401k, 403b, 457b, SEP-IRA. A 25% penalty applies on any shortfall not withdrawn.</p>
+      <table class="info-tbl">
+        <tr><th>Age</th><th>Factor</th><th>Age</th><th>Factor</th></tr>
+        <tr><td>73</td><td>26.5</td><td>80</td><td>20.2</td></tr>
+        <tr><td>74</td><td>25.5</td><td>82</td><td>18.5</td></tr>
+        <tr><td>75</td><td>24.6</td><td>85</td><td>16.0</td></tr>
+        <tr><td>76</td><td>23.7</td><td>90</td><td>12.2</td></tr>
+        <tr><td>78</td><td>22.0</td><td>95</td><td>8.9</td></tr>
+      </table>
+    </div>
+
+    <div class="info-sec">
+      <h4>Cash Events — Tax Overview</h4>
+      <table class="info-tbl">
+        <tr><th>Event type</th><th>Tax treatment</th></tr>
+        <tr><td>Inheritance received</td><td>Income-tax-free to recipient. Inherited investments get a stepped-up cost basis.</td></tr>
+        <tr><td>House sale (primary)</td><td>Up to $500k excluded from capital gains (married, lived there 2 of last 5 years).</td></tr>
+        <tr><td>Business sale</td><td>Capital gains if stock sale; ordinary income if asset sale. Get a CPA involved.</td></tr>
+        <tr><td>RSU / equity vesting</td><td>Taxed as ordinary income (W-2) in the year received.</td></tr>
+        <tr><td>Insurance payout</td><td>Life insurance death benefits are usually tax-free.</td></tr>
+        <tr><td>Gift received</td><td>Not taxable to recipient. Giver files a return if over $18k/person/year.</td></tr>
+        <tr><td>Charitable donation</td><td>Deductible up to 60% of AGI for cash gifts to qualifying charities when itemising.</td></tr>
+        <tr><td>Legal settlement</td><td>Physical injury awards generally tax-free; punitive/employment awards taxable.</td></tr>
+        <tr><td>Large purchases</td><td>No deduction. Directly reduces account balances.</td></tr>
+        <tr><td>Home renovation</td><td>No immediate deduction. Increases property cost basis, reducing future capital gains.</td></tr>
+        <tr><td>Moving costs</td><td>Generally not deductible for retirees under current law.</td></tr>
+      </table>
+    </div>
+
+    <div class="info-disc">
+      These figures are illustrative and based on 2024/25 US tax law. Tax law changes frequently — always verify with a qualified CPA or financial planner before making decisions. This planner uses simplified tax estimates; actual liability will vary based on deductions, credits, filing status, state law, and other factors. Investment returns are assumptions, not guarantees. Sequence-of-returns risk (poor early returns permanently damaging the portfolio) is not modelled.
+    </div>
+  </div>
+</div>
+
+<!-- ── CONFIRM DIALOG ── -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <h3>↺ Start fresh?</h3>
+    <p>This will clear all people, income streams, accounts, scenarios, and cash events — resetting to a blank default state. <strong>This cannot be undone.</strong> If you want to keep your current data, use <em>↓ Export &amp; Save → Save App</em> first to download a copy before resetting.</p>
+    <div class="confirm-btns">
+      <button class="btn btn-outline" onclick="document.getElementById('confirm-overlay').classList.remove('open')">Cancel</button>
+      <button class="btn" style="background:var(--status-red);border-color:var(--status-red);color:#fff" onclick="doStartFresh()">Yes, reset everything</button>
+    </div>
+  </div>
+</div>
+<div class="split">
+<div class="lpane" id="lpane" style="width:490px">
+
+  <!-- Tab bar -->
+  <div class="ltab-bar">
+    <button class="ltab act" onclick="showLTab(0,this)">People &amp; Assets</button>
+    <button class="ltab" onclick="showLTab(1,this)">Scenarios &amp; Events</button>
+  </div>
+
+  <!-- Tab 0: People, Income, Accounts -->
+  <div class="ltab-panel open" id="ltab-0">
+    <div class="accord">
+      <button class="ac-btn open" onclick="togAc(this)">People &amp; Income Streams <span class="ac-arr">▾</span></button>
+      <div class="ac-body open">
+        <div id="ppl-list"></div>
+        <button class="btn-add" onclick="addPerson()">+ Add person</button>
+        <p class="note" style="margin-top:6px" id="mfj-note"></p>
+        <div class="seclbl" style="margin-top:0.875rem">Income streams</div>
+        <div id="inc-list"></div>
+        <button class="btn-add" onclick="addInc()">+ Add income stream</button>
+      </div>
+    </div>
+    <div class="accord">
+      <button class="ac-btn open" onclick="togAc(this)">Accounts &amp; Assets <span class="ac-arr">▾</span></button>
+      <div class="ac-body open">
+        <div id="accts-list"></div>
+        <button class="btn-add" onclick="addAcct()">+ Add account or asset</button>
+        <p class="note" style="margin-top:5px">Add a property with type "Real property / Home" to include its appreciated value in total wealth without it being in the drawdown pool.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 1: Scenarios, Expenses, Cash Events -->
+  <div class="ltab-panel" id="ltab-1">
+    <div class="accord">
+      <button class="ac-btn open" onclick="togAc(this)">Expense Scenarios <span class="ac-arr">▾</span></button>
+      <div class="ac-body open">
+        <div class="spills" id="scen-pills"></div>
+        <div id="exp-ed"></div>
+      </div>
+    </div>
+    <div class="accord">
+      <button class="ac-btn open" onclick="togAc(this)">Cash Events for this Scenario <span class="ac-arr">▾</span></button>
+      <div class="ac-body open">
+        <p style="font-size:11.5px;color:var(--mu);margin-bottom:0.65rem;line-height:1.5">One-off inflows and outflows for the <strong id="ce-scen-name">active scenario</strong>. Each scenario has its own cash events — switch scenario pills above to edit a different scenario's events.</p>
+        <div id="ce-list"></div>
+        <div style="display:flex;gap:5px;margin-top:4px">
+          <button class="btn-add" style="width:50%" onclick="addCE('in')">+ Add inflow / windfall</button>
+          <button class="btn-add" style="width:50%;border-color:#f8d4d4;color:var(--red)" onclick="addCE('out')">+ Add outflow / purchase</button>
+        </div>
+        <p class="note" style="margin-top:8px">Tax guidance for each event type is shown on each card below. For full details on tax brackets, gift limits, and required minimum distributions, open the <button onclick="toggleInfo()" style="background:none;border:none;padding:0;font-size:10.5px;color:var(--navy);cursor:pointer;text-decoration:underline;font-family:var(--font-sans);font-style:italic">Info &amp; Assumptions Panel</button> in the header.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /lpane -->
+<div class="resizer" id="resizer"></div>
+<div class="rpane" id="rpane">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;gap:8px">
+    <div class="res-hd" id="res-hd">Results</div>
+    <div class="popwrap">
+      <button class="btn-outline" onclick="togglePop('met-pop')">Metrics ▾</button>
+      <div class="popover" id="met-pop"><div class="pop-title">Show / hide metrics</div><div id="met-items"></div></div>
+    </div>
+  </div>
+  <div id="met-grid" class="met-grid"></div>
+  <div class="cleg" id="cleg"></div>
+  <div class="chart-wrap"><canvas id="main-chart"></canvas></div>
+  <div class="resbar">
+    <div style="font-size:0.85rem;font-family:var(--fd);color:var(--navy)" id="tbl-hd">Year-by-year projection</div>
+    <div class="popwrap">
+      <button class="btn-outline" onclick="togglePop('col-pop')" style="font-size:12px;padding:3px 9px">Adjust Columns ···</button>
+      <div class="popover" id="col-pop" style="min-width:230px"><div class="pop-title">Drag to reorder · check to show</div><div id="col-items"></div></div>
+    </div>
+  </div>
+  <div class="rt-wrap"><table class="rt"><thead id="rt-head"></thead><tbody id="rt-body"></tbody></table></div>
+</div>
+</div><!-- /split -->
+</div><!-- /app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+/* ══ TOOLTIP ══ */
+const ttEl=document.getElementById('tt');
+let ttT=null;
+document.addEventListener('mouseover',e=>{
+  const t=e.target.closest('[data-tip]');if(!t)return;
+  clearTimeout(ttT);ttT=setTimeout(()=>{
+    const r=t.getBoundingClientRect();
+    ttEl.textContent=t.dataset.tip;ttEl.style.display='block';
+    const tw=ttEl.offsetWidth,th=ttEl.offsetHeight;
+    let left=r.left+r.width/2-tw/2,top=r.top-th-10;
+    left=Math.max(6,Math.min(left,window.innerWidth-tw-6));
+    if(top<6)top=r.bottom+8;
+    ttEl.style.left=left+'px';ttEl.style.top=top+'px';
+  },100);
+});
+document.addEventListener('mouseout',e=>{if(e.target.closest('[data-tip]')){clearTimeout(ttT);ttEl.style.display='none';}});
+
+/* ══ RESIZER ══ */
+(()=>{
+  const r=document.getElementById('resizer'),l=document.getElementById('lpane');
+  let drag=false,sx=0,sw=0;
+  r.addEventListener('mousedown',e=>{drag=true;sx=e.clientX;sw=l.offsetWidth;r.classList.add('active');e.preventDefault();});
+  document.addEventListener('mousemove',e=>{if(!drag)return;l.style.width=Math.max(260,Math.min(sw+e.clientX-sx,window.innerWidth-300))+'px';});
+  document.addEventListener('mouseup',()=>{drag=false;r.classList.remove('active');});
+})();
+
+/* ══ ACCORDION ══ */
+function togAc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open');}
+
+/* ══ LEFT PANE TABS ══ */
+function showLTab(idx,btn){
+  document.querySelectorAll('.ltab').forEach(b=>b.classList.remove('act'));
+  document.querySelectorAll('.ltab-panel').forEach(p=>p.classList.remove('open'));
+  btn.classList.add('act');
+  document.getElementById('ltab-'+idx).classList.add('open');
+}
+
+/* ══ POPOVER ══ */
+function togglePop(id){
+  const p=document.getElementById(id);
+  const wasOpen=p.classList.contains('open');
+  document.querySelectorAll('.popover').forEach(x=>x.classList.remove('open'));
+  if(!wasOpen){p.classList.add('open');if(id==='met-pop')renderMetItems();if(id==='col-pop')renderColItems();}
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.popwrap'))document.querySelectorAll('.popover').forEach(x=>x.classList.remove('open'));});
+
+/* ══ RMD TABLE (IRS Uniform Lifetime) ══ */
+const RMD_T={72:27.4,73:26.5,74:25.5,75:24.6,76:23.7,77:22.9,78:22.0,79:21.1,80:20.2,
+  81:19.4,82:18.5,83:17.7,84:16.8,85:16.0,86:15.2,87:14.4,88:13.7,89:12.9,90:12.2,
+  91:11.5,92:10.8,93:10.1,94:9.5,95:8.9,96:8.4,97:7.8,98:7.3,99:6.8,100:6.4};
+
+// Account types that are subject to Required Minimum Distributions
+const RMD_TYPES=new Set(['traditional','403b','457b','sep_ira']);
+
+/* ══ DEFAULT STATE ══ */
+const DEF={
+  endAge:95,genInfl:2.5,medInfl:5.5,retRate:6.5,stressRate:3.0,
+  useStress:false,stateTax:0,showEur:false,eurRate:0.92,
+  people:[
+    {id:1,name:'Father',currentAge:70,deathAge:85},
+    {id:2,name:'Mother',currentAge:68,deathAge:88},
+  ],_npid:3,
+  incomes:[
+    {id:1,pid:1,label:'Social Security',type:'ss',amount:28000,prd:'yr',adj:2.5,adjType:'fixed',startAge:'',endAge:'',taxType:'ss',note:''},
+    {id:2,pid:2,label:'Social Security',type:'ss',amount:22000,prd:'yr',adj:2.5,adjType:'fixed',startAge:'',endAge:'',taxType:'ss',note:''},
+    {id:3,pid:0,label:'Pension (joint)',type:'pension',amount:0,prd:'yr',adj:0,adjType:'none',startAge:'',endAge:'',taxType:'ordinary',note:''},
+  ],_niid:4,
+  accounts:[
+    {id:1,label:'Investment Fund (IRA/401k)',balance:3000000,rate:6.5,type:'traditional',drawOrder:1,annualCost:0},
+    {id:2,label:'Brokerage Account',balance:700000,rate:5.5,type:'taxable',drawOrder:2,annualCost:0},
+    {id:3,label:'Joint Savings',balance:300000,rate:4.5,type:'taxable',drawOrder:3,annualCost:0},
+  ],_naid:4,
+  activeScenario:0,
+  scenarios:[
+    {id:1,name:'Stay in Home',expenses:[
+      {id:1,label:'Property tax & insurance',amount:18000,prd:'yr',infl:'general',startAge:'',endAge:'',note:'Property tax, homeowner insurance, HOA fees'},
+      {id:2,label:'Medical & healthcare',amount:24000,prd:'yr',infl:'medical',startAge:'',endAge:'',note:'Medicare premiums + supplemental. Higher-income retirees pay IRMAA surcharges.'},
+      {id:3,label:'Food & groceries',amount:14400,prd:'yr',infl:'general',startAge:'',endAge:'',note:'Food, dining, household supplies'},
+      {id:4,label:'Home maintenance',amount:12000,prd:'yr',infl:'general',startAge:'',endAge:'',note:'Repairs, utilities, landscaping, appliances'},
+      {id:5,label:'Transport',amount:7200,prd:'yr',infl:'general',startAge:'',endAge:'',note:'Car insurance, fuel, maintenance'},
+      {id:6,label:'Travel & leisure',amount:12000,prd:'yr',infl:'general',startAge:'',endAge:'',note:'Vacations, hobbies, entertainment, family gifts'},
+      {id:7,label:'Other',amount:6000,prd:'yr',infl:'general',startAge:'',endAge:'',note:''},
+    ],cashEvents:[
+      {id:1,dir:'out',label:'New car',type:'purchase',age:73,amount:40000,note:''},
+    ]},
+    {id:2,name:'Sell & Downsize',expenses:[
+      {id:1,label:'Rent or condo fees',amount:30000,prd:'yr',infl:'general',startAge:'',endAge:'',note:'Monthly rent or condo + insurance'},
+      {id:2,label:'Medical & healthcare',amount:24000,prd:'yr',infl:'medical',startAge:'',endAge:'',note:'Medicare premiums, supplemental, out-of-pocket'},
+      {id:3,label:'Food & groceries',amount:13200,prd:'yr',infl:'general',startAge:'',endAge:'',note:''},
+      {id:4,label:'Transport',amount:6000,prd:'yr',infl:'general',startAge:'',endAge:'',note:''},
+      {id:5,label:'Travel & leisure',amount:15000,prd:'yr',infl:'general',startAge:'',endAge:'',note:'Increased travel budget post-downsizing'},
+      {id:6,label:'Other',amount:6000,prd:'yr',infl:'general',startAge:'',endAge:'',note:''},
+    ],cashEvents:[
+      {id:1,dir:'in',label:'House sale proceeds',type:'house',age:70,amount:500000,note:'Net after agent fees; primary residence exclusion may apply'},
+      {id:2,dir:'out',label:'New car',type:'purchase',age:72,amount:40000,note:''},
+    ]},
+    {id:3,name:'Assisted Living',expenses:[
+      {id:1,label:'Facility — Person 1',amount:96000,prd:'yr',infl:'medical',startAge:'',endAge:'',note:'Memory care / assisted living ~$5,500–$9,000/mo. Use From/To ages for specific years.'},
+      {id:2,label:'Facility — Person 2',amount:72000,prd:'yr',infl:'medical',startAge:'',endAge:'',note:'Set to 0 if only one person in a facility'},
+      {id:3,label:'Medical extras',amount:18000,prd:'yr',infl:'medical',startAge:'',endAge:'',note:'Medications, specialists, dental, uncovered costs'},
+      {id:4,label:'Personal & incidentals',amount:9600,prd:'yr',infl:'general',startAge:'',endAge:'',note:''},
+      {id:5,label:'Family visits & transport',amount:6000,prd:'yr',infl:'general',startAge:'',endAge:'',note:''},
+    ],cashEvents:[]},
+  ],_nsid:4,_neid:8,_ncid:3,
+  cols:{ss:true,pension:true,rmd:true,gross:true,tax:true,expenses:true,ceio:true,draw:true,realwealth:true,infloss:false,cumtax:false,total:true},
+  /* colOrder controls the left-to-right display order in the results table.
+     Keys must match the keys in cols. Drag-and-drop updates this array. */
+  colOrder:['ss','pension','rmd','gross','tax','expenses','ceio','draw','realwealth','infloss','cumtax','total'],
+  mets:{startwealth:true,endwealth:true,funded:true,avgtax:true,cumtaxpd:false,realend:false,efftax:false,inflcost:false},
+};
+
+/* BLANK — the minimal "start fresh" state.
+   One unnamed person, one empty scenario, three zero-balance accounts.
+   All income and cash events are absent so the user builds from scratch. */
+const BLANK={
+  endAge:95,genInfl:2.5,medInfl:5.5,retRate:6.5,stressRate:3.0,
+  useStress:false,stateTax:0,showEur:false,eurRate:0.92,
+  people:[{id:1,name:'Person 1',currentAge:65,deathAge:90}],_npid:2,
+  incomes:[],_niid:1,
+  accounts:[
+    {id:1,label:'Investment Account',balance:0,rate:6.5,type:'traditional',drawOrder:1,annualCost:0},
+    {id:2,label:'Savings Account',balance:0,rate:4.5,type:'taxable',drawOrder:2,annualCost:0},
+  ],_naid:3,
+  activeScenario:0,
+  scenarios:[{id:1,name:'General',expenses:[],cashEvents:[]}],
+  _nsid:2,_neid:1,_ncid:1,
+  cols:{ss:true,pension:true,rmd:true,gross:true,tax:true,expenses:true,ceio:true,draw:true,realwealth:true,infloss:false,cumtax:false,total:true},
+  colOrder:['ss','pension','rmd','gross','tax','expenses','ceio','draw','realwealth','infloss','cumtax','total'],
+  mets:{startwealth:true,endwealth:true,funded:true,avgtax:true,cumtaxpd:false,realend:false,efftax:false,inflcost:false},
+};
+
+/* Load saved state or use defaults */
+const _sv=JSON.parse(document.getElementById('istate').textContent);
+let S=_sv?JSON.parse(JSON.stringify(_sv)):JSON.parse(JSON.stringify(DEF));
+
+/* ── State migration guards ──
+   Each guard ensures a field introduced in a later version exists when
+   loading a file saved by an older version. Add a guard for every new
+   top-level state field. */
+if(!S.people){S.people=[{id:1,name:'Father',currentAge:S.startAge||70,deathAge:S.father?.deathAge||85},{id:2,name:'Mother',currentAge:68,deathAge:S.mother?.deathAge||88}];S._npid=3;}
+S.people.forEach(p=>{if(p.currentAge===undefined)p.currentAge=70;}); // v7: add currentAge to existing people
+if(!S.incomes){S.incomes=JSON.parse(JSON.stringify(DEF.incomes));S._niid=4;}
+if(!S._nsid)S._nsid=4;
+if(!S.cols)S.cols=JSON.parse(JSON.stringify(DEF.cols));
+if(!S.mets)S.mets=JSON.parse(JSON.stringify(DEF.mets));
+// v8: add colOrder for draggable column ordering
+if(!S.colOrder)S.colOrder=JSON.parse(JSON.stringify(DEF.colOrder));
+// v7: migrate global cashEvents into the first scenario (if the global array exists)
+if(S.cashEvents&&S.cashEvents.length){
+  if(!S.scenarios[0].cashEvents)S.scenarios[0].cashEvents=[];
+  S.scenarios[0].cashEvents.push(...S.cashEvents);
+  delete S.cashEvents;
+}
+// v7: ensure every scenario has a cashEvents array
+S.scenarios.forEach(sc=>{if(!sc.cashEvents)sc.cashEvents=[];});
+if(!S._ncid)S._ncid=3;
+// endAge is now stored; fall back to 95
+if(!S.endAge)S.endAge=95;
+delete S.startAge; // replaced by S.people[0].currentAge
+
+/* Account and chart colors */
+const ACCT_CLR=['#1b2f4a','#b8892b','#2d6a4f','#b83232','#7366c8','#0c7c84']; // financial accounts
+const PROP_CLR=['#8B5E3C','#A67850','#C49368']; // property/real-estate accounts
+
+/* ══ FORMAT ══ */
+function fmt(n){if(n===null||n===undefined)return'—';const v=S.showEur?Math.round(n*S.eurRate):Math.round(n);return(S.showEur?'€':'$')+v.toLocaleString();}
+function fmtK(n){const v=S.showEur?n*S.eurRate:n,sym=S.showEur?'€':'$';if(Math.abs(v)>=1e6)return sym+(v/1e6).toFixed(2)+'M';if(Math.abs(v)>=1e3)return sym+Math.round(v/1e3)+'k';return sym+Math.round(v);}
+function toAnn(v,p){return p==='mo'?v*12:v;}
+function disp(a,p){return p==='mo'?+(a/12).toFixed(2):a;}
+
+/* ══ TAX ══
+   Simplified US federal income tax using 2024/25 brackets.
+   Social Security provisional income test (IRS Pub. 915):
+     provisional = (non-SS income) + SS×0.5
+     > $44,000 MFJ / $34,000 single → 85% of SS taxable
+     > $32,000 MFJ / $25,000 single → 50% of SS taxable
+   AGI = non-SS income + taxable SS portion
+   Taxable income = max(0, AGI − standard deduction)
+   State income tax = flat % of AGI
+   NOTE: MFJ status assumed when ≥2 people alive; single when 1 remains.
+   For >2 people, additional members' incomes are taxed as ordinary income (simplification).
+*/
+function calcTax(gross,ssTotal,single){
+  const pv=(gross-ssTotal)+ssTotal*0.5;
+  const th=single?{n:25000,h:34000}:{n:32000,h:44000};
+  let tss=0;
+  if(pv>th.h)tss=ssTotal*0.85;
+  else if(pv>th.n)tss=ssTotal*0.5;
+  const agi=(gross-ssTotal)+tss;
+  const std=single?15000:30000;
+  const tx=Math.max(0,agi-std);
+  const b=single
+    ?[[11600,.10],[47150,.12],[100525,.22],[191950,.24],[243725,.32],[609350,.35],[1e9,.37]]
+    :[[23200,.10],[94300,.12],[201050,.22],[383900,.24],[487450,.32],[731200,.35],[1e9,.37]];
+  let tax=0,pr=0;
+  for(const[l,r]of b){if(tx<=pr)break;tax+=(Math.min(tx,l)-pr)*r;pr=l;}
+  return Math.round(tax+agi*S.stateTax/100);
+}
+
+/* ══ INCOME TYPE DEFINITIONS ══ */
+const INC_TYPES={
+  ss:{label:'Social Security',badge:'itb-ss',adjLabel:'Cost-of-living adjustment (%/yr)',adjTip:'Social Security payments are increased each October using the CPI-W index. Recent adjustments: 2024=3.2%, 2023=8.7%. Default 2.5% is conservative for long-run planning.',taxType:'ss',defaultAdj:2.5,note:"Survivor benefit: when one person passes, the survivor keeps whichever SS amount is higher. The lower stops automatically."},
+  pension:{label:'Pension',badge:'itb-pension',adjLabel:'Annual increase (%/yr)',adjTip:'Most private pensions are fixed. Some government pensions have a COLA. Enter 0 if fixed.',taxType:'ordinary',defaultAdj:0,note:'Taxed as ordinary income. Check your pension document for survivor provisions.'},
+  annuity:{label:'Annuity',badge:'itb-annuity',adjLabel:'Annual increase (%/yr)',adjTip:'Fixed annuities have no increases; inflation-indexed annuities do.',taxType:'ordinary',defaultAdj:0,note:'Taxation depends on whether premiums were paid pre- or after-tax. Consult a tax advisor.'},
+  rental:{label:'Rental income',badge:'itb-rental',adjLabel:'Annual rent increase (%/yr)',adjTip:'Rental income typically grows with general inflation or local market conditions.',taxType:'ordinary',defaultAdj:0,note:'Taxed as ordinary income. Depreciation and expenses can reduce taxable rental income. Model a sale in Cash Events.'},
+  wages:{label:'Part-time wages',badge:'itb-wages',adjLabel:'Annual wage increase (%/yr)',adjTip:'Wages are subject to income tax and payroll taxes (Social Security / Medicare).',taxType:'ordinary',defaultAdj:0,note:'After full retirement age there is no Social Security earnings limit.'},
+  other:{label:'Other income',badge:'itb-other',adjLabel:'Annual adjustment (%/yr)',adjTip:'Custom adjustment rate.',taxType:'ordinary',defaultAdj:0,note:'Verify tax treatment with a qualified tax advisor.'},
+};
+
+/* ══ CASH EVENT TYPE DEFINITIONS ══ */
+const CE_T={
+  house:{label:'House sale proceeds',dir:'in',tax:'Primary residence exclusion: up to $500,000 excluded from capital gains (married couple; must have lived there 2 of last 5 years). Enter net proceeds after any estimated tax.'},
+  inheritance:{label:'Inheritance received',dir:'in',tax:'Generally income-tax-free to recipient in the US. Inherited investments receive a stepped-up cost basis, minimising capital gains if sold promptly.'},
+  insurance:{label:'Insurance / life policy payout',dir:'in',tax:'Life insurance death benefits are usually tax-free. Annuity payouts may be partially taxable.'},
+  giftin:{label:'Gift received',dir:'in',tax:'Not taxable to recipient. Giver must file a gift tax return if over $18,000 per person per year (2024 annual exclusion).'},
+  assetsale:{label:'Asset / investment sale',dir:'in',tax:'Enter net proceeds after estimated capital gains tax. Long-term gains (held >1 year) taxed at 0%, 15%, or 20% depending on income.'},
+  business_sale:{label:'Business sale / equity event',dir:'in',tax:'Capital gains treatment if structured as stock sale; ordinary income if asset sale. A tax attorney and CPA should be involved in structuring a business sale.'},
+  rsus:{label:'RSU / stock options vesting',dir:'in',tax:'Taxed as ordinary income in the year received (W-2 income). Any subsequent growth after vesting is taxed as capital gains.'},
+  settlement:{label:'Legal or insurance settlement',dir:'in',tax:'Physical injury settlements are generally tax-free. Punitive damages, emotional distress awards, and employment settlements are typically taxable. Verify with a CPA.'},
+  otherin:{label:'Other inflow',dir:'in',tax:'Verify tax treatment with a CPA for unusual income sources.'},
+  purchase:{label:'Large purchase',dir:'out',tax:'No tax deduction. Directly reduces account balances.'},
+  renovation:{label:'Home renovation',dir:'out',tax:'No immediate tax deduction. Improvements increase your property cost basis, which reduces future capital gains when the home is sold.'},
+  giftout:{label:'Gift given',dir:'out',tax:'Not deductible. Giver must file a gift tax return if over $18,000 per recipient per year. Lifetime exemption of ~$13.6M (2024) before gift tax is actually owed.'},
+  medical_exp:{label:'Large medical expense',dir:'out',tax:'Medical expenses exceeding 7.5% of AGI may be deductible if you itemise. Consult a CPA. High costs may be partially offset by HSA withdrawals.'},
+  charity:{label:'Charitable donation',dir:'out',tax:'Cash donations to qualifying charities are deductible up to 60% of AGI when you itemise. Appreciated securities donated directly can avoid capital gains entirely.'},
+  education:{label:'Education costs (family)',dir:'out',tax:'Not directly deductible for grandchildren. 529 plan contributions are not federally deductible but grow tax-free. Direct tuition payments to institutions are excluded from gift tax.'},
+  moving:{label:'Moving / relocation costs',dir:'out',tax:'Generally not deductible for retirees (the moving expense deduction was suspended for most taxpayers until 2025+).'},
+  otherout:{label:'Other outflow',dir:'out',tax:''},
+};
+
+/* ══ SIMULATE ══════════════════════════════════════════════════════════════════
+   Year-by-year projection. Returns an array of row objects consumed by all
+   three render functions (metrics, chart, table).
+
+   Age model (v7+):
+   - Each person has their own currentAge (not a global startAge).
+   - "Simulation age" shown in table = S.people[0].currentAge + year y.
+   - Each person p's own age in year y = p.currentAge + y.
+   - Deaths are checked against each person's own age timeline.
+   - Income streams linked to a person use that person's age for start/end checks.
+   - RMDs use the primary (first) person's age.
+   - Simulation ends when: the primary person reaches S.endAge, OR all people
+     have passed, OR total wealth reaches zero — whichever comes first.
+
+   Property accounts (type='property'):
+   - Appreciate at their own rate but are NOT in the drawdown pool.
+   - Included in total wealth and the chart as a separate colour.
+   - Surplus cash does NOT flow into property accounts.
+   - Costs (property tax, maintenance) are deducted annually.
+
+   Cash events:
+   - Now stored per-scenario (sc.cashEvents) instead of globally.
+*/
+function simulate(){
+  const primaryAge=S.people[0].currentAge;
+  const sc=S.scenarios[S.activeScenario];
+  const fallbackRet=(S.useStress?S.stressRate:S.retRate)/100;
+
+  // Max simulation years: until primary person hits endAge, or last person dies
+  const maxYears=Math.min(
+    S.endAge-primaryAge,                                  // primary person's end age
+    Math.max(...S.people.map(p=>p.deathAge-p.currentAge)) // years until last person dies
+  )+1;
+
+  // All accounts sorted by drawOrder (property accounts stay in the array but skip drawdown)
+  const sorted=[...S.accounts].sort((a,b)=>a.drawOrder-b.drawOrder);
+  let bals=sorted.map(a=>a.balance);
+
+  // Hoist SS stream list — never changes during the loop
+  const allSS=S.incomes.filter(i=>i.type==='ss');
+
+  // Alive/dead status for each person, keyed by person id
+  const dead=Object.fromEntries(S.people.map(p=>[p.id,false]));
+
+  const rows=[];
+  let cumTax=0;
+
+  for(let y=0;y<maxYears;y++){
+    const tableAge=primaryAge+y; // primary person's age — shown in the Age column
+    const events=[];
+
+    // ── Mark deaths using each person's own age ──────────────────────────────
+    S.people.forEach(p=>{
+      const pAge=p.currentAge+y;
+      if(!dead[p.id]&&pAge>=p.deathAge){
+        dead[p.id]=true;
+        events.push({type:'death',pid:p.id,name:p.name});
+      }
+    });
+    const livePeople=S.people.filter(p=>!dead[p.id]);
+    // MFJ filing for 2 people; single for 1; note: >2 uses MFJ as a simplification
+    const singleFiler=livePeople.length<=1;
+
+    const inflY=Math.pow(1+S.genInfl/100,y);
+    const medY =Math.pow(1+S.medInfl/100,y);
+
+    // ── Income streams (each linked person uses their own age for timing) ──────
+    let ssTotal=0,otherInc=0;
+    const survivingSSAmounts=[];
+    for(const inc of S.incomes){
+      const person=S.people.find(p=>p.id===inc.pid);
+      const personAge=person?person.currentAge+y:tableAge; // joint income uses primary age
+      const sa=inc.startAge===''||inc.startAge===null?null:+inc.startAge;
+      const ea=inc.endAge===''||inc.endAge===null?null:+inc.endAge;
+      if(sa!==null&&personAge<sa)continue;
+      if(ea!==null&&personAge>ea)continue;
+      if(inc.pid!==0&&dead[inc.pid])continue; // person has passed
+      const adj=inc.adjType==='general'?inflY:inc.adjType==='medical'?medY:inc.adjType==='none'?1:Math.pow(1+(inc.adj||0)/100,y);
+      const ann=inc.amount*adj;
+      if(inc.type==='ss')survivingSSAmounts.push({pid:inc.pid,amt:ann});
+      else otherInc+=ann;
+    }
+
+    // ── Social Security survivor benefit ──────────────────────────────────────
+    if(survivingSSAmounts.length===0&&allSS.length>0){
+      ssTotal=0; // all SS recipients have passed
+    } else if(survivingSSAmounts.length<allSS.length&&survivingSSAmounts.length>0){
+      // One died: survivor gets the highest of all original amounts at this year's COLA
+      ssTotal=Math.max(...allSS.map(inc=>inc.amount*Math.pow(1+(inc.adj||0)/100,y)));
+    } else {
+      ssTotal=survivingSSAmounts.reduce((t,x)=>t+x.amt,0);
+    }
+
+    // ── Required Minimum Distributions ───────────────────────────────────────
+    // Based on primary person's age; applies to RMD_TYPES accounts only.
+    let rmdTotal=0;
+    const acctRmds=sorted.map(()=>0);
+    if(tableAge>=73){
+      const factor=RMD_T[Math.min(tableAge,100)]||6.4;
+      sorted.forEach((a,i)=>{
+        if(RMD_TYPES.has(a.type)&&bals[i]>0){
+          acctRmds[i]=bals[i]/factor;
+          rmdTotal+=acctRmds[i];
+        }
+      });
+    }
+
+    const gross=ssTotal+otherInc+rmdTotal;
+    const tax=calcTax(gross,ssTotal,singleFiler);
+    const netInc=gross-tax;
+    cumTax+=tax;
+
+    // ── Expenses ─────────────────────────────────────────────────────────────
+    let expenses=0;
+    for(const e of sc.expenses){
+      const sa=e.startAge===''||e.startAge===null?null:+e.startAge;
+      const ea=e.endAge===''||e.endAge===null?null:+e.endAge;
+      if((sa===null||tableAge>=sa)&&(ea===null||tableAge<=ea)){
+        expenses+=e.amount*(e.infl==='medical'?medY:e.infl==='none'?1:inflY);
+      }
+    }
+    // Per-account ongoing costs (property tax, management fees etc.) — inflation-adjusted
+    const acctCosts=sorted.reduce((t,a)=>t+(a.annualCost||0)*inflY,0);
+
+    // Per-scenario cash events (one-off inflows/outflows)
+    let ceIn=0,ceOut=0;
+    for(const ce of (sc.cashEvents||[])){
+      if(ce.age===tableAge){ce.dir==='in'?ceIn+=ce.amount:ceOut+=ce.amount;}
+    }
+
+    const cashflow=netInc-expenses-acctCosts-ceOut+ceIn;
+    const extraDraw=cashflow<0?-cashflow:0;
+    const surplus  =cashflow>0? cashflow:0;
+
+    // ── Update balances ───────────────────────────────────────────────────────
+    bals=bals.map((b,i)=>{
+      const a=sorted[i];
+      const r=(a.rate!==undefined?a.rate:fallbackRet*100)/100;
+      // RMDs only apply to non-property accounts
+      const rmd=a.type==='property'?0:acctRmds[i];
+      return b*(1+r)-(a.annualCost||0)*inflY-rmd;
+    });
+
+    // ── Drawdown waterfall (skip property accounts) ───────────────────────────
+    let rem=extraDraw;
+    for(let i=0;i<bals.length;i++){
+      if(sorted[i].type==='property')continue; // property can't be drawn without selling
+      if(rem<=0)break;
+      const d=Math.min(rem,Math.max(0,bals[i]));
+      bals[i]-=d;rem-=d;
+    }
+    // Surplus goes into the first non-property account
+    if(surplus>0){
+      const fi=sorted.findIndex(a=>a.type!=='property');
+      if(fi>=0)bals[fi]+=surplus;
+    }
+
+    const snap=bals.map(b=>Math.round(Math.max(0,b)));
+    const total=snap.reduce((t,v)=>t+v,0);
+    const deflator=Math.pow(1+S.genInfl/100,y);
+    const realTotal=Math.round(total/deflator);
+    const inflLoss=total-realTotal;
+
+    rows.push({
+      age:tableAge,yr:new Date().getFullYear()+y,
+      ss:Math.round(ssTotal),otherInc:Math.round(otherInc),rmd:Math.round(rmdTotal),
+      gross:Math.round(gross),tax:Math.round(tax),cumTax:Math.round(cumTax),
+      expenses:Math.round(expenses),ceIn:Math.round(ceIn),ceOut:Math.round(ceOut),
+      extraDraw:Math.round(extraDraw),surplus:Math.round(surplus),
+      snap,total,realTotal,inflLoss:Math.round(inflLoss),
+      events,depleted:total<=0,
+      allDead:Object.values(dead).every(Boolean),
+    });
+
+    if(total<=0||rows[rows.length-1].allDead)break;
+  }
+  return rows;
+}
+
+/* ══ RENDER: PEOPLE ══ */
+function renderPeople(){
+  const mfjNote=document.getElementById('mfj-note');
+  if(S.people.length>2){mfjNote.textContent='Note: Federal tax uses Married Filing Jointly status for 2 people. With more than 2 people, additional members are treated as household members with ordinary income tax rates. Only married couples file jointly under current US tax law.';}
+  else mfjNote.textContent='';
+  document.getElementById('ppl-list').innerHTML=S.people.map(p=>{
+    const avi=(p.name||'?').trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+    return `<div style="margin-bottom:6px">
+      <div class="phead">
+        <div class="pavi">${avi}</div>
+        <input class="pname" value="${p.name}" placeholder="Name" oninput="pF(${p.id},'name',this.value)">
+        ${S.people.length>1?`<button class="btn-del" onclick="delPerson(${p.id})">✕</button>`:''}
+      </div>
+      <div class="pblock">
+        <div class="g3">
+          <div class="f"><label>Current age</label>
+            <input type="number" value="${p.currentAge}" min="40" max="100" oninput="pF(${p.id},'currentAge',+this.value)">
+          </div>
+          <div class="f"><label data-tip="The age at which this person is expected to pass. When this age is reached: their income streams stop; for Social Security, the survivor receives whichever benefit is higher (survivor benefit); tax filing changes to single. The simulation ends when all people have passed or the primary person reaches the end age — whichever comes first.">Predicted age at passing</label>
+            <input type="number" value="${p.deathAge}" min="${p.currentAge+1}" max="115" oninput="pF(${p.id},'deathAge',+this.value)">
+            <p class="note">US life expectancy at 70: women ~87, men ~84</p>
+          </div>
+          <div style="padding-top:18px;font-size:11px;color:var(--mu);line-height:1.45">
+            ${S.incomes.filter(i=>i.pid===p.id).length} income stream${S.incomes.filter(i=>i.pid===p.id).length!==1?'s':''} linked
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function pF(id,f,v){const p=S.people.find(x=>x.id===id);if(p){p[f]=v;if(f!=='name'){renderPeople();recalc();}else renderPeople();}}
+function addPerson(){
+  S.people.push({id:S._npid++,name:'Person '+(S.people.length+1),currentAge:65,deathAge:85});
+  renderPeople();recalc();
+}
+function delPerson(id){
+  if(S.people.length<=1){alert('At least one person is required.');return;}
+  S.people=S.people.filter(x=>x.id!==id);
+  S.incomes=S.incomes.filter(i=>i.pid!==id);
+  renderPeople();renderIncomes();recalc();
+}
+
+/* ══ RENDER: INCOME STREAMS ══ */
+function renderIncomes(){
+  document.getElementById('inc-list').innerHTML=S.incomes.map(inc=>{
+    const td=INC_TYPES[inc.type]||INC_TYPES.other;
+    const pOpts=`<option value="0" ${inc.pid===0?'selected':''}>Household / Joint</option>`
+      +S.people.map(p=>`<option value="${p.id}" ${inc.pid===p.id?'selected':''}>${p.name} (age ${p.currentAge})</option>`).join('');
+    const adjOpts=['fixed','general','medical','none'].map(v=>`<option value="${v}" ${inc.adjType===v?'selected':''}>${v==='fixed'?'Fixed %/yr':v==='general'?'General inflation':v==='medical'?'Medical inflation':'No adjustment'}</option>`).join('');
+    return `<div class="inc-card type-${inc.type}">
+      <div class="inc-head">
+        <span class="inc-type-badge ${td.badge}" data-tip="${td.note}">${td.label}</span>
+        <select onchange="incF(${inc.id},'type',this.value)" style="font-size:11px;border:1px solid var(--brd);border-radius:4px;padding:2px 4px;flex:1">
+          ${Object.entries(INC_TYPES).map(([k,v])=>`<option value="${k}" ${inc.type===k?'selected':''}>${v.label}</option>`).join('')}
+        </select>
+        <button class="btn-del" onclick="delInc(${inc.id})">✕</button>
+      </div>
+      <div class="g2" style="margin-bottom:5px">
+        <div class="f"><label>Description / label</label><input type="text" value="${inc.label}" oninput="incF(${inc.id},'label',this.value)"></div>
+        <div class="f"><label>Linked to person</label><select onchange="incF(${inc.id},'pid',+this.value)">${pOpts}</select></div>
+      </div>
+      <div class="g2">
+        <div>
+          <div class="mrow">
+            <div class="f"><label>Amount</label><input type="number" class="mono" value="${disp(inc.amount,inc.prd)}" step="${inc.prd==='mo'?100:1000}" oninput="incAmt(${inc.id},+this.value)"></div>
+            <div class="ftog"><button class="ftb ${inc.prd==='mo'?'act':''}" onclick="incPrd(${inc.id},'mo')">mo</button><button class="ftb ${inc.prd==='yr'?'act':''}" onclick="incPrd(${inc.id},'yr')">yr</button></div>
+          </div>
+          <div class="g2">
+            <div class="f"><label>From age (blank = start)</label><input type="number" value="${inc.startAge}" placeholder="—" min="40" max="115" oninput="incF(${inc.id},'startAge',this.value)"></div>
+            <div class="f"><label>To age (blank = death)</label><input type="number" value="${inc.endAge}" placeholder="—" min="40" max="115" oninput="incF(${inc.id},'endAge',this.value)"></div>
+          </div>
+        </div>
+        <div>
+          <div class="f"><label data-tip="${td.adjTip||''}">${td.adjLabel}</label><input type="number" value="${inc.adj}" step="0.1" min="-5" max="15" oninput="incF(${inc.id},'adj',+this.value)"></div>
+          <div class="f"><label>Adjustment type</label><select onchange="incF(${inc.id},'adjType',this.value)">${adjOpts}</select></div>
+          <div class="f"><label>Tax treatment</label><select onchange="incF(${inc.id},'taxType',this.value)">
+            <option value="ss" ${inc.taxType==='ss'?'selected':''}>Social Security rules (up to 85% taxable)</option>
+            <option value="ordinary" ${inc.taxType==='ordinary'?'selected':''}>Ordinary income (fully taxable)</option>
+            <option value="capital" ${inc.taxType==='capital'?'selected':''}>Capital gains rates (0–20%)</option>
+            <option value="exempt" ${inc.taxType==='exempt'?'selected':''}>Tax-exempt</option>
+          </select></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function incF(id,f,v){const i=S.incomes.find(x=>x.id===id);if(!i)return;i[f]=v;if(f==='type'){const td=INC_TYPES[v]||INC_TYPES.other;i.taxType=td.taxType;i.adj=td.defaultAdj;}if(f!=='label'&&f!=='note')recalc();if(f==='type')renderIncomes();}
+function incAmt(id,v){const i=S.incomes.find(x=>x.id===id);if(i){i.amount=toAnn(v,i.prd);recalc();}}
+function incPrd(id,prd){const i=S.incomes.find(x=>x.id===id);if(i){i.prd=prd;renderIncomes();recalc();}}
+function addInc(){S.incomes.push({id:S._niid++,pid:S.people[0]?.id||0,label:'New income',type:'other',amount:0,prd:'yr',adj:0,adjType:'none',startAge:'',endAge:'',taxType:'ordinary',note:''});renderIncomes();}
+function delInc(id){S.incomes=S.incomes.filter(x=>x.id!==id);renderIncomes();recalc();}
+
+/* ══ RENDER: ACCOUNTS ══ */
+function renderAccts(){
+  document.getElementById('accts-list').innerHTML=S.accounts.map((a,i)=>{
+    const isP=a.type==='property';
+    const tbLabel={traditional:'Traditional/IRA',roth:'Roth IRA',taxable:'Taxable/Savings','403b':'403(b)/Nonprofit','457b':'457(b)/Gov Deferred',sep_ira:'SEP-IRA',hsa:'HSA',trust:'Trust Account',cd:'CD/Bond',property:'Real Property'}[a.type]||a.type;
+    const tbClass={traditional:'trad',roth:'roth',taxable:'taxb','403b':'trad','457b':'trad',sep_ira:'trad',hsa:'roth',trust:'taxb',cd:'taxb',property:'prop'}[a.type]||'taxb';
+    const tbTip={traditional:'Traditional IRA / 401k: pre-tax contributions; withdrawals taxed as ordinary income; required min. distributions (RMDs) from age 73.','403b':'403(b): employer retirement plan for nonprofits/education — same tax rules as Traditional IRA; RMDs apply from age 73.','457b':'457(b): government/nonprofit deferred compensation plan; same tax treatment as Traditional IRA; RMDs apply from age 73.',sep_ira:'SEP-IRA: for self-employed; same tax treatment as Traditional IRA; RMDs apply from age 73.',roth:'Roth IRA: after-tax contributions; qualified withdrawals are completely tax-free; no required minimum distributions.',hsa:'Health Savings Account: triple tax advantage — pre-tax contributions, tax-free growth, tax-free qualified medical withdrawals. No RMDs.',taxable:'Taxable brokerage / savings / cash: capital gains or interest income tax on withdrawals.',trust:'Revocable/irrevocable trust account: taxable; no RMDs.',cd:'Certificate of Deposit / bond: interest income taxed as ordinary income; no RMDs.',property:'Real property / home: appreciates in value over time. NOT in the drawdown pool — must be sold (via a Cash Event) to access the value. Annual costs (property tax, maintenance) are deducted. Shown separately in the chart.'}[a.type]||'';
+    const rmdChip=RMD_TYPES.has(a.type)&&a.balance>0&&S.people[0]?.currentAge>=73
+      ?`<div class="rmd-chip">Estimated required minimum distribution at age ${S.people[0].currentAge}: ${fmt(a.balance/(RMD_T[Math.min(S.people[0].currentAge,100)]||6.4))}/year</div>`:'';
+    return `<div class="acct-card${isP?' prop-acct':''}">
+      <div class="acct-head">
+        <div class="acct-ord" data-tip="${isP?'Property account — tracked separately; not in drawdown order.':'Drawdown priority '+(i+1)+': drawn '+(i===0?'first':'after account '+(i))+' when expenses exceed income.'}">${isP?'P':i+1}</div>
+        <input class="acct-ni" value="${a.label}" oninput="acctF(${a.id},'label',this.value)">
+        <span class="tbadge ${tbClass}" data-tip="${tbTip}">${tbLabel}</span>
+        ${S.accounts.length>1?`<button class="btn-del" onclick="delAcct(${a.id})">✕</button>`:''}
+      </div>
+      <div class="g3">
+        <div class="f"><label>${isP?'Current market value ($)':'Balance ($)'}</label><input type="number" class="mono" value="${a.balance}" step="10000" oninput="acctF(${a.id},'balance',+this.value)"></div>
+        <div class="f"><label>${isP?'Annual appreciation %':'Annual return %'}</label><input type="number" value="${a.rate}" step="0.1" min="-5" max="20" oninput="acctF(${a.id},'rate',+this.value)"></div>
+        <div class="f"><label data-tip="Annual costs: property tax, HOA, insurance, management fees, maintenance. Inflation-adjusted each year.">${isP?'Annual costs (tax, maint.) $':'Annual fees / costs ($)'}</label><input type="number" class="mono" value="${a.annualCost||0}" step="500" oninput="acctF(${a.id},'annualCost',+this.value)"></div>
+      </div>
+      <div class="f" style="margin-bottom:3px"><label>Account / asset type</label>
+        <select onchange="acctF(${a.id},'type',this.value)">
+          <optgroup label="Tax-deferred (RMDs apply from age 73)">
+            <option value="traditional" ${a.type==='traditional'?'selected':''}>Traditional IRA / 401(k) — taxable withdrawals</option>
+            <option value="403b" ${a.type==='403b'?'selected':''}>403(b) — nonprofit / education employer plan</option>
+            <option value="457b" ${a.type==='457b'?'selected':''}>457(b) — government / nonprofit deferred comp</option>
+            <option value="sep_ira" ${a.type==='sep_ira'?'selected':''}>SEP-IRA — self-employed retirement account</option>
+          </optgroup>
+          <optgroup label="Tax-free (no RMDs)">
+            <option value="roth" ${a.type==='roth'?'selected':''}>Roth IRA — tax-free qualified withdrawals</option>
+            <option value="hsa" ${a.type==='hsa'?'selected':''}>HSA — Health Savings Account (triple tax advantage)</option>
+          </optgroup>
+          <optgroup label="Taxable accounts">
+            <option value="taxable" ${a.type==='taxable'?'selected':''}>Taxable brokerage / savings / cash</option>
+            <option value="trust" ${a.type==='trust'?'selected':''}>Trust account (revocable / irrevocable)</option>
+            <option value="cd" ${a.type==='cd'?'selected':''}>Certificate of Deposit / bonds</option>
+          </optgroup>
+          <optgroup label="Real assets">
+            <option value="property" ${a.type==='property'?'selected':''}>Real property / Home — appreciates; not in drawdown pool</option>
+          </optgroup>
+        </select>
+      </div>
+      ${!isP?`<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+        <span style="font-size:10.5px;color:var(--mu)">Drawdown order: ${i+1} — ${i===0?'drawn first':'after account '+i}</span>
+        <div style="display:flex;gap:3px">${i>0?`<button class="btn-xs" onclick="moveAcct(${a.id},-1)">↑</button>`:''}${i<S.accounts.length-1?`<button class="btn-xs" onclick="moveAcct(${a.id},1)">↓</button>`:''}</div>
+      </div>`:'<p class="note">Property is tracked separately — add a "House sale proceeds" cash event in the Scenarios tab to model a sale.</p>'}
+      ${rmdChip}
+    </div>`;
+  }).join('');
+}
+function acctF(id,f,v){const a=S.accounts.find(x=>x.id===id);if(a){a[f]=v;if(f!=='label'){renderAccts();recalc();}}}
+function addAcct(){S.accounts.push({id:S._naid++,label:'New Account',balance:100000,rate:4.5,type:'taxable',drawOrder:S.accounts.length+1,annualCost:0});renderAccts();recalc();}
+function delAcct(id){S.accounts=S.accounts.filter(x=>x.id!==id);S.accounts.forEach((a,i)=>a.drawOrder=i+1);renderAccts();recalc();}
+function moveAcct(id,d){
+  const i=S.accounts.findIndex(x=>x.id===id);
+  const ni=i+d;if(ni<0||ni>=S.accounts.length)return;
+  [S.accounts[i],S.accounts[ni]]=[S.accounts[ni],S.accounts[i]];
+  S.accounts.forEach((a,idx)=>a.drawOrder=idx+1);
+  renderAccts();recalc();
+}
+
+/* ══ RENDER: SCENARIOS & EXPENSES ══ */
+function renderScens(){
+  document.getElementById('scen-pills').innerHTML=S.scenarios.map((sc,i)=>`
+    <span class="spill ${i===S.activeScenario?'act':''}">
+      <span onclick="switchScen(${i})">${sc.name}</span>
+      <span class="sdup" onclick="dupScen(${i})" title="Duplicate scenario">⧉</span>
+      ${S.scenarios.length>1?`<span class="sdel" onclick="delScen(${i})" title="Delete">✕</span>`:''}
+    </span>`).join('')+
+    `<button class="btn-scen-new" onclick="addScen()">+ New scenario</button>`;
+  renderExp();
+  renderCE();
+  const scName=S.scenarios[S.activeScenario].name;
+  document.getElementById('ce-scen-name').textContent='"'+scName+'"';
+  document.getElementById('tbl-hd').textContent='Year-by-year · '+scName;
+}
+function switchScen(i){S.activeScenario=i;renderScens();recalc();}
+function addScen(){
+  const n=prompt('Scenario name:','New Scenario');if(!n)return;
+  S.scenarios.push({id:S._nsid++,name:n,cashEvents:[],expenses:[
+    {id:S._neid++,label:'Housing',amount:24000,prd:'yr',infl:'general',startAge:'',endAge:'',note:''},
+    {id:S._neid++,label:'Medical & healthcare',amount:24000,prd:'yr',infl:'medical',startAge:'',endAge:'',note:''},
+    {id:S._neid++,label:'Food & groceries',amount:14400,prd:'yr',infl:'general',startAge:'',endAge:'',note:''},
+    {id:S._neid++,label:'Other',amount:6000,prd:'yr',infl:'general',startAge:'',endAge:'',note:''},
+  ]});
+  S.activeScenario=S.scenarios.length-1;renderScens();recalc();
+}
+function dupScen(i){
+  const src=S.scenarios[i];
+  const clone=JSON.parse(JSON.stringify(src));
+  clone.id=S._nsid++;
+  clone.name=src.name+' (copy)';
+  // Re-assign unique IDs to all copied items
+  clone.expenses.forEach(e=>e.id=S._neid++);
+  clone.cashEvents.forEach(ce=>ce.id=S._ncid++);
+  S.scenarios.splice(i+1,0,clone);
+  S.activeScenario=i+1;
+  renderScens();recalc();
+}
+function delScen(i){if(!confirm('Delete "'+S.scenarios[i].name+'"?'))return;S.scenarios.splice(i,1);S.activeScenario=Math.min(S.activeScenario,S.scenarios.length-1);renderScens();recalc();}
+
+function renderExp(){
+  const si=S.activeScenario;
+  const sc=S.scenarios[si];
+  const tot=sc.expenses.reduce((t,e)=>t+e.amount,0);
+  document.getElementById('exp-ed').innerHTML=`
+    <div style="background:var(--surf);border:1px solid var(--brd);border-radius:var(--r2);padding:0.6rem 0.875rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;gap:6px">
+        <div style="display:flex;align-items:center;gap:5px">
+          <input style="font-family:var(--fd);font-size:0.8rem;font-weight:500;color:var(--navy);border:none;border-bottom:1px dashed var(--brd2);background:transparent;padding:1px 0;width:150px" value="${sc.name}" oninput="S.scenarios[${si}].name=this.value;document.querySelectorAll('.spill.act span:first-child').forEach(s=>s.textContent=this.value);document.getElementById('tbl-hd').textContent='Year-by-year · '+this.value;document.getElementById('ce-scen-name').textContent='&quot;'+this.value+'&quot;'">
+          <span style="font-size:10px;color:var(--hi)">← rename</span>
+        </div>
+        <span style="font-size:11.5px;color:var(--mu);white-space:nowrap">Total: <strong style="font-family:var(--fn);color:var(--tx)">${fmt(tot)}/yr</strong> · <strong style="font-family:var(--fn)">${fmt(tot/12)}/mo</strong></span>
+      </div>
+      <div class="exp-wrap"><table class="etbl">
+        <thead><tr>
+          <th style="min-width:120px">Item</th><th style="min-width:78px">Amount</th>
+          <th style="width:56px">Period</th><th style="width:72px">Inflation</th>
+          <th style="width:54px" data-tip="Leave blank to apply from the simulation start. Set an age to model costs that begin later — e.g. assisted living from age 82.">From age</th>
+          <th style="width:54px" data-tip="Leave blank to apply through end of simulation. Set an age to model costs that stop — e.g. a mortgage ending at age 75.">To age</th>
+          <th style="min-width:110px">Notes</th>
+          <th style="width:54px">Reorder</th>
+          <th style="width:24px"></th>
+        </tr></thead>
+        <tbody>${sc.expenses.map((e,ei)=>`<tr>
+          <td><input type="text" value="${e.label}" oninput="expF(${si},${ei},'label',this.value)"></td>
+          <td><input type="number" class="mono" value="${disp(e.amount,e.prd)}" step="${e.prd==='mo'?50:500}" oninput="expAmt(${si},${ei},+this.value)"></td>
+          <td><div class="ftog" style="height:24px"><button class="ftb ${e.prd==='mo'?'act':''}" onclick="expPrd(${si},${ei},'mo')">mo</button><button class="ftb ${e.prd==='yr'?'act':''}" onclick="expPrd(${si},${ei},'yr')">yr</button></div></td>
+          <td><select onchange="expF(${si},${ei},'infl',this.value)" style="font-size:11px"><option value="general" ${e.infl==='general'?'selected':''}>General</option><option value="medical" ${e.infl==='medical'?'selected':''}>Medical</option><option value="none" ${e.infl==='none'?'selected':''}>Fixed</option></select></td>
+          <td><input type="number" value="${e.startAge}" placeholder="—" min="40" max="115" oninput="expF(${si},${ei},'startAge',this.value)" style="font-size:11.5px"></td>
+          <td><input type="number" value="${e.endAge}" placeholder="—" min="40" max="115" oninput="expF(${si},${ei},'endAge',this.value)" style="font-size:11.5px"></td>
+          <td><input type="text" value="${e.note||''}" placeholder="What's included…" oninput="expF(${si},${ei},'note',this.value)" style="font-size:11px"></td>
+          <td style="white-space:nowrap">
+            ${ei>0?`<button class="btn-xs" onclick="moveExp(${si},${ei},-1)" style="padding:1px 5px">↑</button>`:'<span style="display:inline-block;width:24px"></span>'}
+            ${ei<sc.expenses.length-1?`<button class="btn-xs" onclick="moveExp(${si},${ei},1)" style="padding:1px 5px">↓</button>`:''}
+          </td>
+          <td><button class="btn-del" onclick="delExp(${si},${ei})">✕</button></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+      <button class="btn-add" onclick="addExp(${si})">+ Add expense row</button>
+    </div>`;
+}
+function expF(si,ei,f,v){S.scenarios[si].expenses[ei][f]=v;if(f!=='label'&&f!=='note'){recalc();renderExp();}}
+function expAmt(si,ei,v){const e=S.scenarios[si].expenses[ei];e.amount=toAnn(v,e.prd);recalc();}
+function expPrd(si,ei,p){S.scenarios[si].expenses[ei].prd=p;renderExp();recalc();}
+function addExp(si){S.scenarios[si].expenses.push({id:S._neid++,label:'New expense',amount:0,prd:'yr',infl:'general',startAge:'',endAge:'',note:''});renderExp();}
+function delExp(si,ei){S.scenarios[si].expenses.splice(ei,1);renderExp();recalc();}
+function moveExp(si,ei,d){
+  const exps=S.scenarios[si].expenses;
+  const ni=ei+d;if(ni<0||ni>=exps.length)return;
+  [exps[ei],exps[ni]]=[exps[ni],exps[ei]];
+  renderExp();recalc();
+}
+
+/* ══ RENDER: CASH EVENTS (per active scenario) ══ */
+function renderCE(){
+  const si=S.activeScenario;
+  const ces=(S.scenarios[si].cashEvents||[]);
+  document.getElementById('ce-list').innerHTML=ces.length===0
+    ?'<p style="font-size:12px;color:var(--hi);margin-bottom:5px">No cash events for this scenario yet.</p>'
+    :ces.map(ce=>{
+      const t=CE_T[ce.type]||(ce.dir==='in'?CE_T.otherin:CE_T.otherout);
+      return `<div class="ce-card">
+        <div class="ce-head">
+          <span class="ce-type ${ce.dir==='in'?'ce-in':'ce-out'}">${ce.dir==='in'?'↑ Inflow':'↓ Outflow'}</span>
+          <select onchange="ceF(${si},${ce.id},'type',this.value)" style="font-size:11.5px;border:1px solid var(--brd);border-radius:4px;padding:2px 4px;flex:1">
+            <optgroup label="Inflows">${Object.entries(CE_T).filter(([,v])=>v.dir==='in').map(([k,v])=>`<option value="${k}" ${ce.type===k?'selected':''}>${v.label}</option>`).join('')}</optgroup>
+            <optgroup label="Outflows">${Object.entries(CE_T).filter(([,v])=>v.dir==='out').map(([k,v])=>`<option value="${k}" ${ce.type===k?'selected':''}>${v.label}</option>`).join('')}</optgroup>
+          </select>
+          <button class="btn-del" onclick="delCE(${si},${ce.id})">✕</button>
+        </div>
+        <div class="ce-rows">
+          <div class="f" style="margin:0"><label>Description</label><input type="text" value="${ce.label}" oninput="ceF(${si},${ce.id},'label',this.value)"></div>
+          <div class="f" style="margin:0"><label>At age</label><input type="number" value="${ce.age}" min="40" max="115" oninput="ceF(${si},${ce.id},'age',+this.value)"></div>
+          <div class="f" style="margin:0"><label>Amount ($)</label><input type="number" class="mono" value="${ce.amount}" step="1000" oninput="ceF(${si},${ce.id},'amount',+this.value)"></div>
+          <div class="f" style="margin:0"><label>Notes</label><input type="text" value="${ce.note||''}" placeholder="Optional…" oninput="ceF(${si},${ce.id},'note',this.value)"></div>
+          <div></div>
+        </div>
+        <div class="tnote ${ce.dir==='in'?'tnote-n':'tnote-y'}">${t.tax}</div>
+      </div>`;
+    }).join('');
+}
+function ceF(si,id,f,v){
+  const ce=(S.scenarios[si].cashEvents||[]).find(x=>x.id===id);
+  if(!ce)return;
+  ce[f]=v;
+  if(f==='type'){const t=CE_T[v];if(t)ce.dir=t.dir;renderCE();}
+  if(f!=='label'&&f!=='note')recalc();
+}
+function addCE(dir){
+  const si=S.activeScenario;
+  if(!S.scenarios[si].cashEvents)S.scenarios[si].cashEvents=[];
+  S.scenarios[si].cashEvents.push({id:S._ncid++,dir,label:dir==='in'?'New inflow':'New outflow',type:dir==='in'?'otherin':'purchase',age:S.people[0].currentAge+5,amount:50000,note:''});
+  renderCE();
+}
+function delCE(si,id){S.scenarios[si].cashEvents=S.scenarios[si].cashEvents.filter(x=>x.id!==id);renderCE();recalc();}
+
+/* ══ METRIC DEFINITIONS ══ */
+const MET_DEFS=[
+  {key:'startwealth',label:'Starting wealth',fn:rows=>({v:fmtK(rows[0].snap.reduce((t,x)=>t+x,0)),c:'',s:'All accounts at age '+S.people[0].currentAge})},
+  {key:'endwealth',label:'End wealth',fn:rows=>{const l=rows[rows.length-1];return{v:fmtK(l.total),c:l.total>1e6?'g':l.total>0?'a':'r',s:'Age '+l.age};}},
+  {key:'funded',label:'Funded through',fn:rows=>{const d=rows.find(r=>r.depleted),l=rows[rows.length-1];return{v:d?'Age '+d.age:'Age '+l.age+'+',c:d?'r':'g',s:d?'All accounts empty':'Projection ends'};}},
+  {key:'avgtax',label:'Avg. annual tax',fn:rows=>({v:fmtK(Math.round(rows.reduce((t,r)=>t+r.tax,0)/rows.length)),c:'a',s:'Federal + state estimate'})},
+  {key:'cumtaxpd',label:'Total tax paid',fn:rows=>({v:fmt(rows[rows.length-1].cumTax),c:'a',s:'Over full projection'})},
+  {key:'realend',label:'End wealth (today\'s $)',fn:rows=>{const l=rows[rows.length-1];return{v:fmtK(l.realTotal),c:l.realTotal>5e5?'g':'a',s:'Inflation-adjusted'};}},
+  {key:'efftax',label:'Effective tax rate',fn:rows=>{const ag=Math.round(rows.reduce((t,r)=>t+r.gross,0)/rows.length),at=Math.round(rows.reduce((t,r)=>t+r.tax,0)/rows.length);return{v:ag>0?(at/ag*100).toFixed(1)+'%':'—',c:'a',s:'Avg tax ÷ avg gross'};}},
+  {key:'inflcost',label:'Inflation erosion',fn:rows=>{const l=rows[rows.length-1];return{v:fmtK(l.inflLoss),c:'r',s:'Purchasing power lost at age '+l.age};}},
+];
+function renderMetItems(){document.getElementById('met-items').innerHTML=MET_DEFS.map(m=>`<label class="pop-item"><input type="checkbox" ${S.mets[m.key]?'checked':''} onchange="S.mets['${m.key}']=this.checked;renderMetrics(lastRows)">${m.label}</label>`).join('');}
+
+/* ══ COLUMN DEFINITIONS ══
+   COL_DEFS is the master list of available columns with labels.
+   Display order is controlled by S.colOrder (user can drag to reorder).
+   Visibility is controlled by S.cols (user can toggle each checkbox).
+*/
+const COL_DEFS=[
+  {key:'ss',label:'Social Security income'},{key:'pension',label:'Pension & other income'},
+  {key:'rmd',label:'Required min. distributions'},{key:'gross',label:'Gross income'},
+  {key:'tax',label:'Tax'},{key:'expenses',label:'Expenses'},
+  {key:'ceio',label:'Cash event inflows / outflows'},{key:'draw',label:'Extra draw / surplus'},
+  {key:'realwealth',label:'Total wealth (today\'s $)'},{key:'infloss',label:'Inflation erosion this year'},
+  {key:'cumtax',label:'Cumulative tax paid'},{key:'total',label:'Total wealth (nominal)'},
+];
+const COL_MAP=Object.fromEntries(COL_DEFS.map(c=>[c.key,c]));
+
+/* Draggable column list with HTML5 drag-and-drop.
+   On drop, S.colOrder is updated and the table re-renders immediately. */
+let dragColSrc=null;
+function renderColItems(){
+  const el=document.getElementById('col-items');
+  el.innerHTML=S.colOrder.map(key=>{
+    const col=COL_MAP[key];
+    if(!col)return'';
+    return`<div class="col-drag-item" draggable="true" data-key="${key}"
+              ondragstart="dragColSrc='${key}';this.classList.add('dragging')"
+              ondragend="this.classList.remove('dragging');document.querySelectorAll('.col-drag-item').forEach(i=>i.classList.remove('drag-over'))"
+              ondragover="event.preventDefault();document.querySelectorAll('.col-drag-item').forEach(i=>i.classList.remove('drag-over'));this.classList.add('drag-over')"
+              ondrop="event.preventDefault();this.classList.remove('drag-over');dropCol('${key}')">
+      <span class="drag-handle">⠿</span>
+      <input type="checkbox" ${S.cols[key]?'checked':''} onclick="S.cols['${key}']=this.checked;renderTable(lastRows)">
+      <span>${col.label}</span>
+    </div>`;
+  }).join('');
+}
+function dropCol(targetKey){
+  if(!dragColSrc||dragColSrc===targetKey)return;
+  const order=[...S.colOrder];
+  const srcIdx=order.indexOf(dragColSrc);
+  const tgtIdx=order.indexOf(targetKey);
+  if(srcIdx<0||tgtIdx<0)return;
+  order.splice(srcIdx,1);
+  order.splice(tgtIdx,0,dragColSrc);
+  S.colOrder=order;
+  renderColItems();
+  renderTable(lastRows);
+}
+
+/* ══ INFO PANEL TOGGLE ══ */
+function toggleInfo(){
+  const panel=document.getElementById('info-panel');
+  const btn=document.getElementById('info-btn');
+  const isOpen=panel.classList.contains('open');
+  panel.classList.toggle('open',!isOpen);
+  btn.classList.toggle('active',!isOpen);
+  btn.textContent=isOpen?'ℹ Info & Assumptions Panel':'✕ Close Info Panel';
+}
+
+/* ══ START FRESH ══ */
+function startFresh(){
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+function doStartFresh(){
+  document.getElementById('confirm-overlay').classList.remove('open');
+  S=JSON.parse(JSON.stringify(BLANK));
+  syncInputs();
+  renderPeople();renderIncomes();renderAccts();renderScens();
+  recalc();
+  // Return to People & Assets tab
+  document.querySelectorAll('.ltab').forEach((b,i)=>{b.classList.toggle('act',i===0);});
+  document.querySelectorAll('.ltab-panel').forEach((p,i)=>{p.classList.toggle('open',i===0);});
+}
+// Allow clicking outside the confirm box to cancel
+document.addEventListener('click',e=>{
+  const overlay=document.getElementById('confirm-overlay');
+  if(e.target===overlay)overlay.classList.remove('open');
+});
+
+/* ══ RENDER: RESULTS ══ */
+let lastRows=[];
+
+function renderMetrics(rows){
+  if(!rows.length)return;
+  const active=MET_DEFS.filter(m=>S.mets[m.key]);
+  const n=active.length;
+  document.getElementById('met-grid').style.gridTemplateColumns=`repeat(${n<=4?n:n<=6?3:4},minmax(0,1fr))`;
+  document.getElementById('met-grid').innerHTML=active.map(m=>{const d=m.fn(rows);return`<div class="met"><div class="met-l">${m.label}</div><div class="met-v ${d.c||''}">${d.v}</div><div class="met-s">${d.s}</div></div>`;}).join('');
+}
+
+let chart=null;
+function renderChart(rows){
+  const sorted=[...S.accounts].sort((a,b)=>a.drawOrder-b.drawOrder);
+  let finColorIdx=0,propColorIdx=0;
+  // Stacked bar datasets: financial accounts first, then property accounts (same stack 's')
+  const barDatasets=sorted.map(a=>{
+    const isP=a.type==='property';
+    const color=isP?PROP_CLR[propColorIdx++%PROP_CLR.length]:ACCT_CLR[finColorIdx++%ACCT_CLR.length];
+    return{label:a.label,data:rows.map((r,i)=>r.snap[sorted.indexOf(a)]||0),backgroundColor:color,stack:'s'};
+  });
+  // Today's $ overlay line — rendered LAST so it sits on top of all bars
+  // Color: indigo (#6B48FF) — clearly distinct from all account colors
+  const realLine={
+    label:"Wealth in today's $",
+    data:rows.map(r=>r.realTotal),
+    type:'line',
+    borderColor:'#6B48FF',
+    backgroundColor:'transparent',
+    borderWidth:2,
+    borderDash:[5,3],
+    pointRadius:0,
+    tension:0.3,
+    stack:undefined,  // not stacked — floats above bars
+  };
+  // Build legend
+  finColorIdx=0;propColorIdx=0;
+  document.getElementById('cleg').innerHTML=
+    sorted.map(a=>{const isP=a.type==='property';const c=isP?PROP_CLR[propColorIdx++%PROP_CLR.length]:ACCT_CLR[finColorIdx++%ACCT_CLR.length];return`<span><span class="ld" style="background:${c}"></span>${a.label}</span>`;}).join('')+
+    `<span><span style="display:inline-block;width:14px;height:0;border-top:2px dashed #6B48FF;vertical-align:middle;margin-right:3px"></span>Today's $</span>`;
+  // Event annotation plugin (vertical dashed lines at death and cash event ages)
+  const sc=S.scenarios[S.activeScenario];
+  const evtAges={};
+  (sc.cashEvents||[]).forEach(ce=>{if(!evtAges[ce.age])evtAges[ce.age]={type:'ce'};});
+  S.people.forEach(p=>{if(!evtAges[p.deathAge])evtAges[p.deathAge]={type:'death'};});
+  const labels=rows.map(r=>String(r.age));
+  const evtPlugin={id:'evtLines',afterDraw(c){
+    const ctx=c.ctx,xs=c.scales.x,ys=c.scales.y;
+    Object.entries(evtAges).forEach(([ageStr,ev])=>{
+      const idx=labels.indexOf(String(+ageStr));if(idx<0)return;
+      const x=xs.getPixelForValue(idx);
+      ctx.save();
+      ctx.strokeStyle=ev.type==='death'?'rgba(184,50,50,0.3)':'rgba(184,137,43,0.4)';
+      ctx.lineWidth=1;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.moveTo(x,ys.top);ctx.lineTo(x,ys.bottom);ctx.stroke();
+      ctx.restore();
+    });
+  }};
+  if(chart){chart.destroy();chart=null;}
+  chart=new Chart(document.getElementById('main-chart'),{
+    type:'bar',
+    // realLine is last in datasets → drawn on top
+    data:{labels,datasets:[...barDatasets,realLine]},
+    plugins:[evtPlugin],
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.raw)}`}}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:10},autoSkip:true,maxTicksLimit:20}},
+               y:{stacked:true,grid:{color:'rgba(0,0,0,0.04)'},ticks:{callback:v=>fmtK(v),font:{size:10}}}}}
+  });
+}
+
+/* renderTable builds the year-by-year table.
+   Columns are rendered in S.colOrder order; visibility controlled by S.cols.
+   Account balance columns are always appended after the colOrder columns. */
+function renderTable(rows){
+  lastRows=rows;
+  const sorted=[...S.accounts].sort((a,b)=>a.drawOrder-b.drawOrder);
+  const c=S.cols;
+  // Tips for column headers
+  const colTips={
+    ss:'Social Security income including COLA. After one person passes, survivor keeps the higher of the two benefit amounts.',
+    rmd:'Required Minimum Distribution — mandatory annual withdrawal from tax-deferred accounts (Traditional IRA, 401k, 403b etc.) from age 73. Taxed as ordinary income.',
+    realwealth:"Total wealth adjusted for general inflation — what the money would buy in today's dollars.",
+    infloss:'Gap between nominal and real wealth — the purchasing power eroded by inflation this year.',
+  };
+  const colHeaders={
+    ss:'Social Security',pension:'Pension & Other',rmd:'Min. Withdrawal',gross:'Gross Income',
+    tax:'Tax',expenses:'Expenses',ceio:'Cash Events',draw:'Extra Draw',
+    realwealth:"Wealth Today's $",infloss:'Inflation Erosion',cumtax:'Cumul. Tax',total:'Total Wealth',
+  };
+  let ths='<th style="text-align:left">Age / Year</th>';
+  // Render in user-defined order
+  for(const key of S.colOrder){
+    if(!c[key])continue;
+    const tip=colTips[key]?`data-tip="${colTips[key]}"`:'' ;
+    ths+=`<th ${tip}>${colHeaders[key]||key}</th>`;
+  }
+  // Per-account balance columns always appended
+  sorted.forEach(a=>{ths+=`<th>${a.label.length>14?a.label.slice(0,13)+'…':a.label}</th>`;});
+  document.getElementById('rt-head').innerHTML='<tr>'+ths+'</tr>';
+
+  document.getElementById('rt-body').innerHTML=rows.map(r=>{
+    const evtNames=r.events.filter(e=>e.type==='death').map(e=>e.name);
+    const cls=r.depleted?'dep':evtNames.length?'evt':'';
+    const evtB=evtNames.map(n=>`<span class="badge bw">${n} passes</span>`).join('');
+    let tds=`<td>${r.age}<span style="color:var(--text-hint);font-size:9px;margin-left:3px">${r.yr}</span>${evtB}</td>`;
+    for(const key of S.colOrder){
+      if(!c[key])continue;
+      switch(key){
+        case 'ss':      tds+=`<td>${fmt(r.ss)}</td>`;break;
+        case 'pension': tds+=`<td>${r.otherInc>0?fmt(r.otherInc):'—'}</td>`;break;
+        case 'rmd':     tds+=`<td>${r.rmd>0?fmt(r.rmd):'—'}</td>`;break;
+        case 'gross':   tds+=`<td>${fmt(r.gross)}</td>`;break;
+        case 'tax':     tds+=`<td class="neg">(${fmt(r.tax)})</td>`;break;
+        case 'expenses':tds+=`<td class="neg">(${fmt(r.expenses)})</td>`;break;
+        case 'ceio':    tds+=`<td>${r.ceIn>0?`<span class="pos">+${fmt(r.ceIn)}</span>`:''}${r.ceOut>0?`<span class="neg">(${fmt(r.ceOut)})</span>`:''}</td>`;break;
+        case 'draw':    tds+=`<td class="${r.extraDraw>0?'neg':r.surplus>0?'pos':''}">${r.extraDraw>0?'('+fmt(r.extraDraw)+')':r.surplus>0?'+'+fmt(r.surplus):'—'}</td>`;break;
+        case 'realwealth':tds+=`<td class="bk">${fmt(r.realTotal)}</td>`;break;
+        case 'infloss': tds+=`<td class="neg">(${fmt(r.inflLoss)})</td>`;break;
+        case 'cumtax':  tds+=`<td class="neg">(${fmt(r.cumTax)})</td>`;break;
+        case 'total':   tds+=`<td class="bk">${fmt(r.total)}</td>`;break;
+      }
+    }
+    sorted.forEach((_,i)=>{tds+=`<td>${fmt(r.snap[i]||0)}</td>`;});
+    return`<tr class="${cls}">${tds}</tr>`;
+  }).join('');
+}
+
+function recalc(){const rows=simulate();renderMetrics(rows);renderChart(rows);renderTable(rows);}
+
+/* ══ STRESS TOGGLE ══ */
+function toggleStress(){
+  S.useStress=!S.useStress;
+  const b=document.getElementById('stress-btn');
+  b.textContent=S.useStress?'ON — pessimistic':'off';
+  b.className='stress-pill '+(S.useStress?'sp-on':'sp-off');
+  recalc();
+}
+
+/* ══ DOWNLOAD APP ══════════════════════════════════════════════════════════
+   Serialises current state into the <script id="istate"> tag and offers the
+   entire file as a download. The resulting .html file is self-contained and
+   opens in any browser with all data pre-loaded.
+   JSON is escaped so < and > don't prematurely close the <script> tag.
+*/
+function dlApp(){
+  let html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+  const j=JSON.stringify(S).replace(/</g,'\\u003c').replace(/>/g,'\\u003e');
+  html=html.replace(/<script id="istate" type="application\/json">[\s\S]*?<\/script>/,
+    `<script id="istate" type="application/json">${j}<\/script>`);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download='retirement-planner.html';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);
+}
+
+/* ══ PRINT / PDF REPORT ══ */
+function printRpt(){
+  const rows=simulate();
+  const sc=S.scenarios[S.activeScenario];
+  const last=rows[rows.length-1];
+  const dep=rows.find(r=>r.depleted);
+  const avgTax=Math.round(rows.reduce((t,r)=>t+r.tax,0)/rows.length);
+  const startTotal=rows[0].snap.reduce((t,v)=>t+v,0);
+  const sorted=[...S.accounts].sort((a,b)=>a.drawOrder-b.drawOrder);
+  const cur=S.showEur?'EUR':'USD';
+  const sym=S.showEur?'€':'$';
+  const n=v=>Math.round(S.showEur?v*S.eurRate:v).toLocaleString();
+  const pct=v=>(+v).toFixed(1)+'%';
+  const dateStr=new Date().toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('rpt-body').innerHTML=`
+  <div class="rpt-cover"><h1>Family Retirement Financial Forecast</h1>
+    <div class="rpt-meta">
+      <span>Scenario: <strong>${sc.name}</strong></span>
+      <span>Ages ${S.people[0].currentAge}–${last.age} (${S.people[0].name})</span>
+      <span>${cur}${S.showEur?' ($1=€'+S.eurRate+')':''}</span>
+      <span>Generated: ${dateStr}</span>
+      <span>${S.useStress?'⚠ Stress-test return active ('+S.stressRate+'%/yr)':'Base return: '+S.retRate+'%/yr'}</span>
+    </div>
+  </div>
+  <div class="rpt-kpis">
+    <div class="rpt-kpi"><div class="rpt-kpi-l">Starting wealth</div><div class="rpt-kpi-v">${sym}${n(startTotal)}</div></div>
+    <div class="rpt-kpi"><div class="rpt-kpi-l">Projected end wealth</div><div class="rpt-kpi-v ${last.total>1e6?'g':last.total>0?'a':'r'}">${sym}${n(last.total)}</div></div>
+    <div class="rpt-kpi"><div class="rpt-kpi-l">${dep?'Depleted at':'Funded through'}</div><div class="rpt-kpi-v ${dep?'r':'g'}">Age ${dep?dep.age:last.age+'+'}</div></div>
+    <div class="rpt-kpi"><div class="rpt-kpi-l">End wealth (today's $)</div><div class="rpt-kpi-v a">${sym}${n(last.realTotal)}</div></div>
+    <div class="rpt-kpi"><div class="rpt-kpi-l">Average annual tax</div><div class="rpt-kpi-v">${sym}${n(avgTax)}</div></div>
+    <div class="rpt-kpi"><div class="rpt-kpi-l">Total tax paid</div><div class="rpt-kpi-v">${sym}${n(last.cumTax)}</div></div>
+    <div class="rpt-kpi"><div class="rpt-kpi-l">Return rate</div><div class="rpt-kpi-v">${S.useStress?S.stressRate:S.retRate}%/yr</div></div>
+    <div class="rpt-kpi"><div class="rpt-kpi-l">General inflation</div><div class="rpt-kpi-v">${S.genInfl}%/yr</div></div>
+  </div>
+  <div class="rpt-sec"><h2>Simulation assumptions</h2>
+    <div class="rpt-assm">
+      <div class="rpt-assm-row"><span class="al">Investment return</span><span class="av">${S.useStress?S.stressRate:S.retRate}%/yr${S.useStress?' (stress test)':''}</span></div>
+      <div class="rpt-assm-row"><span class="al">General inflation</span><span class="av">${S.genInfl}%/yr</span></div>
+      <div class="rpt-assm-row"><span class="al">Medical inflation</span><span class="av">${S.medInfl}%/yr</span></div>
+      <div class="rpt-assm-row"><span class="al">State income tax</span><span class="av">${S.stateTax>0?S.stateTax+'% on AGI':'None (0%)'}</span></div>
+      <div class="rpt-assm-row"><span class="al">Federal tax brackets</span><span class="av">2024/25 simplified estimate</span></div>
+      <div class="rpt-assm-row"><span class="al">Standard deduction</span><span class="av">$30,000 MFJ / $15,000 single</span></div>
+      <div class="rpt-assm-row"><span class="al">RMDs</span><span class="av">IRS Uniform Lifetime Table, from age 73</span></div>
+      <div class="rpt-assm-row"><span class="al">Ages simulated</span><span class="av">${S.people[0].currentAge}–${last.age} (${S.people[0].name}'s age)</span></div>
+    </div>
+  </div>
+  <div class="rpt-sec"><h2>People</h2>
+    <div class="rpt-people">${S.people.map(p=>`<div class="rpt-person"><h3>${p.name}</h3>
+      <div class="rpt-assm-row"><span class="al">Current age</span><span class="av">${p.currentAge}</span></div>
+      <div class="rpt-assm-row"><span class="al">Predicted age at passing</span><span class="av">${p.deathAge}</span></div>
+      <div class="rpt-assm-row"><span class="al">Income streams</span><span class="av">${S.incomes.filter(i=>i.pid===p.id).length} linked</span></div>
+    </div>`).join('')}</div>
+  </div>
+  <div class="rpt-sec"><h2>Income streams</h2>
+    <table class="rt2"><tr><th class="tl">Label</th><th class="tl">Person</th><th class="tl">Type</th><th>Annual (${cur})</th><th>Monthly (${cur})</th><th class="tl">Adjustment</th><th>From age</th><th>To age</th></tr>
+    ${S.incomes.map(inc=>{const p=S.people.find(x=>x.id===inc.pid);const adjL=inc.adjType==='general'?'General inflation':inc.adjType==='none'?'Fixed (no increase)':inc.adj+'%/yr';return`<tr><td class="tl">${inc.label}</td><td class="tl">${p?p.name:'Joint'}</td><td class="tl">${INC_TYPES[inc.type]?.label||inc.type}</td><td>${sym}${n(inc.amount)}</td><td>${sym}${n(inc.amount/12)}</td><td class="tl">${adjL}</td><td>${inc.startAge||'—'}</td><td>${inc.endAge||'—'}</td></tr>`;}).join('')}
+    <tr class="tot"><td class="tl" colspan="3">Total annual</td><td>${sym}${n(S.incomes.reduce((t,i)=>t+i.amount,0))}</td><td>${sym}${n(S.incomes.reduce((t,i)=>t+i.amount,0)/12)}</td><td class="tl" colspan="3"></td></tr>
+    </table>
+  </div>
+  <div class="rpt-sec"><h2>Accounts & assets</h2>
+    <table class="rt2"><tr><th class="tl">Account</th><th class="tl">Type</th><th>Balance / Value</th><th>Return / Apprec. %</th><th>Annual costs</th><th>Draw order</th></tr>
+    ${sorted.map(a=>`<tr><td class="tl">${a.label}</td><td class="tl">${a.type}</td><td>${sym}${n(a.balance)}</td><td>${pct(a.rate)}</td><td>${a.annualCost>0?sym+n(a.annualCost):'—'}</td><td>${a.type==='property'?'Not drawable (property)':a.drawOrder}</td></tr>`).join('')}
+    <tr class="tot"><td class="tl" colspan="2">Total</td><td>${sym}${n(sorted.reduce((t,a)=>t+a.balance,0))}</td><td colspan="3"></td></tr>
+    </table>
+  </div>
+  <div class="rpt-sec pb-before"><h2>Expenses — ${sc.name}</h2>
+    <table class="rt2"><tr><th class="tl">Item</th><th>Annual (${cur})</th><th>Monthly (${cur})</th><th class="tl">Inflation</th><th>From age</th><th>To age</th><th class="tl">Notes</th></tr>
+    ${sc.expenses.map(e=>`<tr><td class="tl">${e.label}</td><td>${sym}${n(e.amount)}</td><td>${sym}${n(e.amount/12)}</td><td class="tl">${e.infl==='medical'?'Medical ('+S.medInfl+'%/yr)':e.infl==='none'?'Fixed':'General ('+S.genInfl+'%/yr)'}</td><td>${e.startAge||'—'}</td><td>${e.endAge||'—'}</td><td class="tl" style="font-size:9px">${e.note||''}</td></tr>`).join('')}
+    <tr class="tot"><td class="tl">Total</td><td>${sym}${n(sc.expenses.reduce((t,e)=>t+e.amount,0))}</td><td>${sym}${n(sc.expenses.reduce((t,e)=>t+e.amount,0)/12)}</td><td class="tl" colspan="4">Today's dollars; inflation applied annually</td></tr>
+    </table>
+    ${S.scenarios.length>1?`<p style="font-size:10px;color:#786f62;margin-top:8px">Other scenarios: ${S.scenarios.filter((_,i)=>i!==S.activeScenario).map(s=>'<em>'+s.name+'</em> ('+sym+n(s.expenses.reduce((t,e)=>t+e.amount,0))+'/yr)').join(', ')}</p>`:''}
+  </div>
+  ${(sc.cashEvents||[]).length?`<div class="rpt-sec"><h2>Cash events — ${sc.name}</h2>
+    <table class="rt2"><tr><th class="tl">Direction</th><th class="tl">Category</th><th class="tl">Description</th><th>At age</th><th>Amount (${cur})</th></tr>
+    ${sc.cashEvents.map(ce=>`<tr><td class="tl">${ce.dir==='in'?'Inflow':'Outflow'}</td><td class="tl">${CE_T[ce.type]?.label||ce.type}</td><td class="tl">${ce.label}</td><td>${ce.age}</td><td>${sym}${n(ce.amount)}</td></tr>`).join('')}
+    </table></div>`:''}
+  <div class="rpt-sec pb-before landscape-section"><h2>Year-by-year projection — ${sc.name}</h2>
+    <table class="rt2"><tr>
+      <th class="tl">Age</th><th class="tl">Year</th><th class="tl">Events</th>
+      <th>Social Security</th><th>Pension & Other</th><th>Min. Withdrawal</th>
+      <th>Gross Income</th><th>Tax (est.)</th><th>Expenses</th><th>Cash Events</th><th>Extra Draw</th>
+      ${sorted.map(a=>`<th>${a.label.length>12?a.label.slice(0,11)+'…':a.label}</th>`).join('')}
+      <th>Total Wealth</th><th>Today's $</th><th>Cumul. Tax</th>
+    </tr>
+    ${rows.map(r=>{
+      const evtNames=r.events.filter(e=>e.type==='death').map(e=>e.name);
+      const cls=r.depleted?'dep':evtNames.length?'evt':'';
+      const ceNet=r.ceIn-r.ceOut;
+      return`<tr class="${cls}">
+        <td class="tl">${r.age}</td><td class="tl">${r.yr}</td>
+        <td class="tl" style="font-size:9px">${evtNames.map(n=>n+' passes').join('; ')||'—'}</td>
+        <td>${sym}${n(r.ss)}</td><td>${r.otherInc>0?sym+n(r.otherInc):'—'}</td><td>${r.rmd>0?sym+n(r.rmd):'—'}</td>
+        <td>${sym}${n(r.gross)}</td><td>(${sym}${n(r.tax)})</td><td>(${sym}${n(r.expenses)})</td>
+        <td>${ceNet>0?'+'+sym+n(ceNet):ceNet<0?'('+sym+n(-ceNet)+')':'—'}</td>
+        <td>${r.extraDraw>0?'('+sym+n(r.extraDraw)+')':r.surplus>0?'+'+sym+n(r.surplus):'—'}</td>
+        ${sorted.map((_,i)=>`<td>${sym}${n(r.snap[i]||0)}</td>`).join('')}
+        <td><strong>${sym}${n(r.total)}</strong></td><td>${sym}${n(r.realTotal)}</td><td>(${sym}${n(r.cumTax)})</td>
+      </tr>`;
+    }).join('')}
+    </table>
+    <p style="font-size:8.5px;color:#a8a098;margin-top:5px">Amber rows = a person passes that year; red rows = all accounts depleted. Min. Withdrawal = Required Minimum Distribution from tax-deferred accounts. Today's $ = total wealth adjusted for ${S.genInfl}%/yr general inflation.</p>
+  </div>
+  <div class="rpt-disc"><strong>Disclaimer:</strong> For illustrative planning purposes only — not financial, tax, legal, or investment advice. Federal tax uses simplified 2024/25 estimates. Actual liability will vary. Returns are not guaranteed. Sequence-of-returns risk not modelled. Property values are estimates and are not independently verified. Consult a qualified financial planner (CFP), accountant (CPA), and estate attorney before making decisions.</div>`;
+  window.print();
+}
+
+/* ══ EXCEL EXPORT ══ */
+function exportXLSX(){
+  function doExport(){
+    const XLSX=window.XLSX;
+    const wb=XLSX.utils.book_new();
+    const rows=simulate();
+    const sc=S.scenarios[S.activeScenario];
+    const sorted=[...S.accounts].sort((a,b)=>a.drawOrder-b.drawOrder);
+    const cur=S.showEur?'EUR':'USD';
+    const cv=v=>S.showEur?Math.round(v*S.eurRate):Math.round(v);
+    const last=rows[rows.length-1];
+    const dep=rows.find(r=>r.depleted);
+    const avgTax=Math.round(rows.reduce((t,r)=>t+r.tax,0)/rows.length);
+    // Summary sheet
+    const sumData=[
+      ['Family Retirement Financial Forecast','','',''],
+      ['Generated',new Date().toLocaleDateString('en-IE'),'Currency',cur],
+      ['Active scenario',sc.name,'Return rate',(S.useStress?S.stressRate:S.retRate)+'%/yr'],
+      ['','','',''],
+      ['KEY METRICS','','',''],
+      ['Starting wealth',cv(rows[0].snap.reduce((t,v)=>t+v,0)),'',''],
+      ['End wealth (nominal)',cv(last.total),'',''],
+      ['End wealth (today\'s $)',cv(last.realTotal),'',''],
+      [dep?'Funds depleted at age':'Funded through age',dep?dep.age:last.age+'+'  ,'',''],
+      ['Average annual tax',cv(avgTax),'Total tax paid',cv(last.cumTax)],
+      ['','','',''],
+      ['ASSUMPTIONS','','',''],
+      ['Investment return',S.retRate+'%/yr','Stress-test return',S.stressRate+'%/yr ('+( S.useStress?'active':'inactive')+')'],
+      ['General inflation',S.genInfl+'%/yr','Medical inflation',S.medInfl+'%/yr'],
+      ['State income tax',S.stateTax+'%','Federal brackets','2024/25 simplified'],
+      ['','','',''],
+      ['PEOPLE','Current age','Predicted age at passing','Income streams'],
+      ...S.people.map(p=>[p.name,p.currentAge,p.deathAge,S.incomes.filter(i=>i.pid===p.id).length]),
+      ['','','',''],
+      ['ACCOUNTS','Balance ('+cur+')','Return %','Type'],
+      ...sorted.map(a=>[a.label,cv(a.balance),a.rate,a.type]),
+      ['TOTAL',cv(sorted.reduce((t,a)=>t+a.balance,0)),'',''],
+    ];
+    const wsSummary=XLSX.utils.aoa_to_sheet(sumData);
+    wsSummary['!cols']=[{wch:40},{wch:18},{wch:28},{wch:18}];
+    XLSX.utils.book_append_sheet(wb,wsSummary,'Summary');
+    // Year by Year sheet
+    const yyH=['Age','Year','Events','Social Security ('+cur+')','Pension & Other ('+cur+')','Min Withdrawal RMD ('+cur+')','Gross Income ('+cur+')','Tax ('+cur+')','Expenses ('+cur+')','Cash Inflows ('+cur+')','Cash Outflows ('+cur+')','Extra Draw ('+cur+')','Surplus ('+cur+')',...sorted.map(a=>a.label+' ('+cur+')'),'Total Wealth ('+cur+')','Wealth Today\'s $ ('+cur+')','Inflation Erosion ('+cur+')','Cumulative Tax ('+cur+')'];
+    const yyR=rows.map(r=>[r.age,r.yr,r.events.filter(e=>e.type==='death').map(e=>e.name).join('; ')||'',cv(r.ss),r.otherInc>0?cv(r.otherInc):0,r.rmd>0?cv(r.rmd):0,cv(r.gross),cv(r.tax),cv(r.expenses),cv(r.ceIn),cv(r.ceOut),cv(r.extraDraw),cv(r.surplus),...sorted.map((_,i)=>cv(r.snap[i]||0)),cv(r.total),cv(r.realTotal),cv(r.inflLoss),cv(r.cumTax)]);
+    const wsYY=XLSX.utils.aoa_to_sheet([yyH,...yyR]);
+    wsYY['!cols']=[{wch:5},{wch:6},{wch:20},...Array(yyH.length-3).fill({wch:16})];
+    XLSX.utils.book_append_sheet(wb,wsYY,'Year by Year');
+    // Income Streams
+    const incH=['Label','Person','Type','Annual ('+cur+')','Monthly ('+cur+')','Adjustment','Adj %/yr','From age','To age','Tax treatment'];
+    const incR=S.incomes.map(inc=>{const p=S.people.find(x=>x.id===inc.pid);return[inc.label,p?p.name:'Joint',INC_TYPES[inc.type]?.label||inc.type,cv(inc.amount),cv(inc.amount/12),inc.adjType,inc.adj,inc.startAge||'',inc.endAge||'',inc.taxType];});
+    const wsInc=XLSX.utils.aoa_to_sheet([incH,...incR]);wsInc['!cols']=[{wch:24},{wch:14},{wch:18},{wch:14},{wch:14},{wch:20},{wch:8},{wch:9},{wch:9},{wch:24}];
+    XLSX.utils.book_append_sheet(wb,wsInc,'Income Streams');
+    // Accounts
+    const acH=['Account','Type','Balance/Value ('+cur+')','Return/Apprec %','Annual Costs ('+cur+')','Draw Order'];
+    const acR=sorted.map(a=>[a.label,a.type,cv(a.balance),a.rate,cv(a.annualCost||0),a.type==='property'?'N/A (property)':a.drawOrder]);
+    const wsAc=XLSX.utils.aoa_to_sheet([acH,...acR]);wsAc['!cols']=[{wch:28},{wch:14},{wch:18},{wch:14},{wch:16},{wch:14}];
+    XLSX.utils.book_append_sheet(wb,wsAc,'Accounts');
+    // All scenario expenses
+    const expH=['Scenario','Item','Annual ('+cur+')','Monthly ('+cur+')','Inflation','From age','To age','Notes'];
+    const expR=[];
+    S.scenarios.forEach(s=>{
+      s.expenses.forEach(e=>expR.push([s.name,e.label,cv(e.amount),cv(e.amount/12),e.infl,e.startAge||'',e.endAge||'',e.note||'']));
+      expR.push([s.name,'TOTAL',cv(s.expenses.reduce((t,e)=>t+e.amount,0)),cv(s.expenses.reduce((t,e)=>t+e.amount,0)/12),'','','','']);
+      expR.push([]);
+    });
+    const wsExp=XLSX.utils.aoa_to_sheet([expH,...expR]);wsExp['!cols']=[{wch:18},{wch:28},{wch:14},{wch:14},{wch:14},{wch:9},{wch:9},{wch:30}];
+    XLSX.utils.book_append_sheet(wb,wsExp,'Expenses');
+    // Cash Events (all scenarios)
+    const ceH=['Scenario','Direction','Category','Description','At age','Amount ('+cur+')','Notes'];
+    const ceR=[];
+    S.scenarios.forEach(s=>(s.cashEvents||[]).forEach(ce=>ceR.push([s.name,ce.dir==='in'?'Inflow':'Outflow',CE_T[ce.type]?.label||ce.type,ce.label,ce.age,cv(ce.amount),ce.note||''])));
+    if(ceR.length){const wsCE=XLSX.utils.aoa_to_sheet([ceH,...ceR]);wsCE['!cols']=[{wch:18},{wch:10},{wch:26},{wch:28},{wch:8},{wch:14},{wch:30}];XLSX.utils.book_append_sheet(wb,wsCE,'Cash Events');}
+    XLSX.writeFile(wb,'retirement-projection.xlsx');
+  }
+  if(window.XLSX){doExport();}
+  else{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=doExport;s.onerror=()=>alert('Could not load the Excel library. Please check your internet connection.');document.head.appendChild(s);}
+}
+
+/* ══ CSV EXPORT ══ */
+function exportCSV(){
+  const rows=simulate();
+  const sorted=[...S.accounts].sort((a,b)=>a.drawOrder-b.drawOrder);
+  const cur=S.showEur?'EUR':'USD';
+  const cv=v=>S.showEur?Math.round(v*S.eurRate):Math.round(v);
+  const H=['Age','Year','Events','Social Security ('+cur+')','Pension & Other ('+cur+')','Min Withdrawal ('+cur+')','Gross Income ('+cur+')','Tax ('+cur+')','Expenses ('+cur+')','Cash Inflows ('+cur+')','Cash Outflows ('+cur+')','Extra Draw ('+cur+')','Surplus ('+cur+')',...sorted.map(a=>a.label+' ('+cur+')'),'Total Wealth ('+cur+')','Wealth Today\'s $ ('+cur+')','Inflation Erosion ('+cur+')','Cumulative Tax ('+cur+')'];
+  const R=rows.map(r=>{
+    const evts=r.events.filter(e=>e.type==='death').map(e=>e.name).join('; ');
+    return[r.age,r.yr,evts?'"'+evts+'"':'',cv(r.ss),r.otherInc>0?cv(r.otherInc):0,r.rmd>0?cv(r.rmd):0,cv(r.gross),cv(r.tax),cv(r.expenses),cv(r.ceIn),cv(r.ceOut),cv(r.extraDraw),cv(r.surplus),...sorted.map((_,i)=>cv(r.snap[i]||0)),cv(r.total),cv(r.realTotal),cv(r.inflLoss),cv(r.cumTax)].join(',');
+  });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([[H.join(','),...R].join('\n')],{type:'text/csv'}));
+  a.download='retirement-projection.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);
+}
+
+/* ══ INIT ══════════════════════════════════════════════════════════════════
+   syncInputs() mirrors loaded state back into the settings dropdown inputs.
+   Called once on load; recalc() is called on every subsequent user change.
+*/
+function syncInputs(){
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+  const chk=(id,v)=>{const el=document.getElementById(id);if(el)el.checked=v;};
+  set('h-ret',S.retRate);  set('h-inf',S.genInfl);  set('h-med',S.medInfl);
+  set('h-str',S.stressRate); set('h-st',S.stateTax); set('h-ea',S.endAge);
+  chk('h-eur',S.showEur);  set('h-er',S.eurRate);
+  if(S.useStress){const b=document.getElementById('stress-btn');if(b){b.textContent='ON — pessimistic';b.className='stress-pill sp-on';}}
+}
+function init(){
+  syncInputs();
+  renderPeople();renderIncomes();renderAccts();renderScens();
+  recalc();
+}
+init();
+</script>
+</body>
+</html>
